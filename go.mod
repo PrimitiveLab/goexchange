@@ -1,5 +1,3 @@
-module github.com/mozhe/go-exchange
+module github.com/primitivelab/goexchange
 
 go 1.14
-
-require github.com/mo-zhe/goexchange v0.0.0-20200921091020-55d3881dd765 // indirect

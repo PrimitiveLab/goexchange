@@ -1,4 +1,4 @@
-package huobi
+package gate
 
 import (
 	"encoding/json"
@@ -11,17 +11,15 @@ import (
 var client = &http.Client{}
 
 func TestGetDepth(t *testing.T) {
-	// client := &http.Client{}
-	market := New(client, "", "", "")
+	market := New(client, "","")
 
-	response := market.GetDepth(NewSymbol("btc", "usdt"), 21, map[string]string{"type": "step0"})
+	response := market.GetDepth(NewSymbol("eos1", "usdt"), 10, nil)
 	b, _ := json.Marshal(response)
 	t.Log(string(b))
 }
 
 func TestGetTicker(t *testing.T) {
-	// client := &http.Client{}
-	market := New(client, "", "", "")
+	market := New(client, "","")
 
 	response := market.GetTicker(NewSymbol("btc", "usdt"))
 	b, _ := json.Marshal(response)
@@ -29,26 +27,24 @@ func TestGetTicker(t *testing.T) {
 }
 
 func TestGetKline(t *testing.T) {
-	// client := &http.Client{}
-	market := New(client, "", "", "")
+	market := New(client, "","")
 
-	response := market.GetKline(NewSymbol("btc", "usdt"), KLINE_PERIOD_5MINUTE, 10, map[string]string{"type": "step0"})
+	response := market.GetKline(NewSymbol("btc", "usdt"), KLINE_PERIOD_5MINUTE, 10, nil)
 	b, _ := json.Marshal(response)
 	t.Log(string(b))
 }
 
 func TestGetTrade(t *testing.T) {
-	// client := &http.Client{}
-	market := New(client, "", "", "")
+	market := New(client, "","")
 
-	response := market.GetTrade(NewSymbol("btc", "usdt"), 21, map[string]string{"type": "step0"})
+	response := market.GetTrade(NewSymbol("btc", "usdt"), 5, nil)
 	b, _ := json.Marshal(response)
 	t.Log(string(b))
 }
 
 func TestGetSymbolList(t *testing.T) {
 	// client := &http.Client{}
-	market := New(client, "", "", "")
+	market := New(client, "","")
 	response := market.GetSymbolList()
 	b, _ := json.Marshal(response)
 	t.Log(string(b))
@@ -56,7 +52,7 @@ func TestGetSymbolList(t *testing.T) {
 
 func TestGetCoinList(t *testing.T) {
 	// client := &http.Client{}
-	market := New(client, "", "", "")
+	market := New(client, "","")
 	response := market.GetCoinList()
 	b, _ := json.Marshal(response)
 	t.Log(string(b))
@@ -64,11 +60,10 @@ func TestGetCoinList(t *testing.T) {
 
 func TestHttpRequest(t *testing.T) {
 	// client := &http.Client{}
-	market := New(client, "", "", "")
-
+	market := New(client, "","")
 	params := map[string]string{}
-	params["symbol"] = NewSymbol("btc", "usdt").ToSymbol("")
-	response := market.HttpRequest("/market/detail/merged", "get", params, false)
+	params["currency_pair"] = NewSymbol("btc", "usdt").ToUpper().ToSymbol("_")
+	response := market.HttpRequest("/api/v4/spot/trades", "get", params, false)
 	b, _ := json.Marshal(response)
 	t.Log(string(b))
 }

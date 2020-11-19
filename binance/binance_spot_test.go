@@ -1,4 +1,4 @@
-package huobi
+package binance
 
 import (
 	"encoding/json"
@@ -11,17 +11,15 @@ import (
 var client = &http.Client{}
 
 func TestGetDepth(t *testing.T) {
-	// client := &http.Client{}
-	market := New(client, "", "", "")
+	market := New(client, "","")
 
-	response := market.GetDepth(NewSymbol("btc", "usdt"), 21, map[string]string{"type": "step0"})
+	response := market.GetDepth(NewSymbol("btc", "usdt"), 21, map[string]string{})
 	b, _ := json.Marshal(response)
 	t.Log(string(b))
 }
 
 func TestGetTicker(t *testing.T) {
-	// client := &http.Client{}
-	market := New(client, "", "", "")
+	market := New(client, "","")
 
 	response := market.GetTicker(NewSymbol("btc", "usdt"))
 	b, _ := json.Marshal(response)
@@ -30,25 +28,25 @@ func TestGetTicker(t *testing.T) {
 
 func TestGetKline(t *testing.T) {
 	// client := &http.Client{}
-	market := New(client, "", "", "")
+	market := New(client, "","")
 
-	response := market.GetKline(NewSymbol("btc", "usdt"), KLINE_PERIOD_5MINUTE, 10, map[string]string{"type": "step0"})
+	response := market.GetKline(NewSymbol("btc", "usdt"), KLINE_PERIOD_5MINUTE, 10, map[string]string{})
 	b, _ := json.Marshal(response)
 	t.Log(string(b))
 }
 
 func TestGetTrade(t *testing.T) {
 	// client := &http.Client{}
-	market := New(client, "", "", "")
+	market := New(client, "","")
 
-	response := market.GetTrade(NewSymbol("btc", "usdt"), 21, map[string]string{"type": "step0"})
+	response := market.GetTrade(NewSymbol("btc", "usdt"), 21, map[string]string{"type" :"step0"})
 	b, _ := json.Marshal(response)
 	t.Log(string(b))
 }
 
 func TestGetSymbolList(t *testing.T) {
 	// client := &http.Client{}
-	market := New(client, "", "", "")
+	market := New(client, "","")
 	response := market.GetSymbolList()
 	b, _ := json.Marshal(response)
 	t.Log(string(b))
@@ -56,15 +54,22 @@ func TestGetSymbolList(t *testing.T) {
 
 func TestGetCoinList(t *testing.T) {
 	// client := &http.Client{}
-	market := New(client, "", "", "")
+	market := New(client, "","")
 	response := market.GetCoinList()
 	b, _ := json.Marshal(response)
 	t.Log(string(b))
 }
 
+func TestGetExchangeName(t *testing.T) {
+	// client := &http.Client{}
+	market := New(client, "","")
+	response := market.GetExchangeName()
+	t.Log(response)
+}
+
 func TestHttpRequest(t *testing.T) {
 	// client := &http.Client{}
-	market := New(client, "", "", "")
+	market := New(client, "","")
 
 	params := map[string]string{}
 	params["symbol"] = NewSymbol("btc", "usdt").ToSymbol("")
