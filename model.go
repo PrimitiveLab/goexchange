@@ -20,3 +20,24 @@ type HttpClientResponse struct {
 	Et 			int64		`json:"et"`
 	Data 		[]byte		`json:"data"`
 }
+
+type PlaceOrder struct {
+	Symbol 		    Symbol
+	ClientOrderId   string
+	Price 		    string
+	Amount 	        string
+	Side            TradeSide
+	TradeType       string
+	TimeInForce     TimeInForce
+	options         map[string]string
+}
+
+type LimitOrder struct {
+	Symbol 		    Symbol
+	ClientOrderId   string
+	Price 		    string
+	Amount 	        string
+	Side            TradeSide
+	TimeInForce     TimeInForce
+	options         map[string]string
+}

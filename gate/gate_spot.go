@@ -146,14 +146,63 @@ func (gateSpot *GateSpot) GetTrade(symbol Symbol, size int, options map[string]s
 	return result
 }
 
-func (gateSpot *GateSpot) HttpRequest(requestUrl, method string, options map[string]string, signed bool) interface{} {
+// 获取余额
+func (spot *GateSpot) GetUserBalance() interface{} {
+	return nil
+}
 
-	params := &url.Values{}
-	for key, value := range options {
-		params.Set(key, value)
-	}
+// 批量下单
+func (spot *GateSpot) PlaceOrder(order *PlaceOrder) interface{} {
+	return nil
+}
 
-	return gateSpot.httpRequest(requestUrl, method, params, signed)
+// 下限价单
+func (spot *GateSpot) PlaceLimitOrder(symbol Symbol, price string, amount string, side TradeSide, ClientOrderId string) interface{} {
+	return nil
+}
+
+// 下市价单
+func (spot *GateSpot) PlaceMarketOrder(symbol Symbol, amount string, side TradeSide, ClientOrderId string) interface{} {
+	return nil
+}
+
+// 批量下限价单
+func (spot *GateSpot) BatchPlaceLimitOrder(orders []LimitOrder) interface{} {
+	return nil
+}
+
+// 撤单
+func (spot *GateSpot) CancelOrder(symbol Symbol, orderId, clientOrderId string) interface{} {
+	return nil
+}
+
+// 批量撤单
+func (spot *GateSpot) BatchCancelOrder(symbol Symbol, orderIds, clientOrderIds string) interface{} {
+	return nil
+}
+
+// 我的当前委托单
+func (spot *GateSpot) GetUserOpenTrustOrders(symbol Symbol, size int, options map[string]string) interface{} {
+	return nil
+}
+
+// 委托单详情
+func (spot *GateSpot) GetUserOrderInfo(symbol Symbol, orderId, clientOrderId string) interface{} {
+	return nil
+}
+
+// 我的成交单列表
+func (spot *GateSpot) GetUserTradeOrders(symbol Symbol, size int, options map[string]string) interface{} {
+	return nil
+}
+
+// 我的委托单列表
+func (spot *GateSpot) GetUserTrustOrders(symbol Symbol, status string, size int, options map[string]string) interface{} {
+	return nil
+}
+
+func (gateSpot *GateSpot) HttpRequest(requestUrl, method string, options interface{}, signed bool) interface{} {
+	return nil
 }
 
 func (gateSpot *GateSpot) httpRequest(url , method string, params *url.Values, signed bool) map[string]interface{} {

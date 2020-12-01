@@ -1,13 +1,20 @@
 package goexchange
 
 import (
+	"strings"
+
 	// "errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	// "net/url"
-	"strings"
 	"time"
+)
+
+// 请求类型
+const (
+	HTTP_GET    string = "GET"
+	HTTP_POST   string = "POST"
+	HTTP_DELETE string = "DELETE"
 )
 
 func NewHttpRequest(client *http.Client, method string, reqUrl string, postData string, headers map[string]string) HttpClientResponse {
@@ -61,10 +68,10 @@ func HttpGet(client *http.Client, reqUrl string) HttpClientResponse {
 	return respData
 }
 
-// func HttpGetWithHeader(client *http.Client, reqUrl string, headers map[string]string) HttpClientResponse {
-// 	respData := NewHttpRequest(client, "GET", reqUrl, "", map[string]string{})
-// 	return respData
-// }
+func HttpGetWithHeader(client *http.Client, reqUrl string, headers map[string]string) HttpClientResponse {
+	respData := NewHttpRequest(client, "GET", reqUrl, "", headers)
+	return respData
+}
 
 // func HttpPostForm(client *http.Client, reqUrl string, postData url.Values) ([]byte, [2]int64,error) {
 // 	headers := map[string]string{
@@ -72,11 +79,13 @@ func HttpGet(client *http.Client, reqUrl string) HttpClientResponse {
 // 	return NewHttpRequest(client, "POST", reqUrl, postData.Encode(), headers)
 // }
 //
-// func HttpPostWithJson(client *http.Client, reqUrl string, postData url.Values) ([]byte,[2]int64, error) {
-// 	headers := map[string]string{
-// 		"Content-Type": "application/x-www-form-urlencoded"}
-// 	return NewHttpRequest(client, "POST", reqUrl, postData.Encode(), headers)
-// }
+
+func HttpPostWithJson(client *http.Client, reqUrl string, postData string, headers map[string]string) HttpClientResponse {
+	headers["Content-Type"] = "application/json; charset=UTF-8"
+
+	return NewHttpRequest(client, "POST", reqUrl, postData, headers)
+}
+
 //
 // func HttpPostWithFormUrlEncoded(client *http.Client, reqUrl string, postData url.Values) ([]byte, [2]int64,error) {
 // 	headers := map[string]string{

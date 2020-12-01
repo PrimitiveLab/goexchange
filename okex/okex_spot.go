@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"net/url"
 	"strconv"
 	"strings"
 
@@ -34,14 +33,21 @@ type OkexSpot struct {
 	accountId string
 	accessKey string
 	secretKey string
+	passphrase string
 }
 
-func New(client *http.Client, apiKey, secretKey string) *OkexSpot {
+func New(client *http.Client, baseUrl string, apiKey, secretKey string, passphrase string) *OkexSpot {
 	instance := new(OkexSpot)
+	if baseUrl == "" {
+		instance.baseUrl = "https://www.okex.com"
+	} else {
+		instance.baseUrl = baseUrl
+	}
 	instance.baseUrl = "https://www.okex.com"
 	instance.httpClient = client
 	instance.accessKey = apiKey
 	instance.secretKey = secretKey
+	instance.passphrase = passphrase
 	return instance
 }
 
@@ -55,16 +61,18 @@ func NewWithConfig(config *APIConfig) *OkexSpot {
 	instance.httpClient = config.HttpClient
 	instance.accessKey = config.ApiKey
 	instance.secretKey = config.ApiSecretKey
+	instance.passphrase = config.ApiPassphrase
 	return instance
 }
 
-func (okexSpot *OkexSpot) GetExchangeName() string {
+// 交易所名称
+func (spot *OkexSpot) GetExchangeName() string {
 	return ECHANGE_OKEX
 }
 
-func (okexSpot *OkexSpot) GetCoinList() interface{} {
-	params := &url.Values{}
-	result := okexSpot.httpRequest("/api/account/v3/currencies", "get", params, false)
+// 币种列表
+func (spot *OkexSpot) GetCoinList() interface{} {
+	result := spot.httpGet("/api/account/v3/currencies",nil,true)
 	if result["code"] != 0 {
 		return result
 	}
@@ -72,10 +80,9 @@ func (okexSpot *OkexSpot) GetCoinList() interface{} {
 	return result
 }
 
-func (okexSpot *OkexSpot) GetSymbolList() interface{} {
-
-	params := &url.Values{}
-	result := okexSpot.httpRequest("/api/spot/v3/instruments", "get", params, false)
+// 交易对列表
+func (spot *OkexSpot) GetSymbolList() interface{} {
+	result := spot.httpGet("/api/spot/v3/instruments", nil, false)
 	if result["code"] != 0 {
 		return result
 	}
@@ -83,64 +90,66 @@ func (okexSpot *OkexSpot) GetSymbolList() interface{} {
 	return result
 }
 
-func (okexSpot *OkexSpot) GetDepth(symbol Symbol, size int, options map[string]string) map[string]interface{} {
-	params := &url.Values{}
+// 深度
+func (spot *OkexSpot) GetDepth(symbol Symbol, size int, options map[string]string) map[string]interface{} {
+	params := map[string]string{}
 	instrumentId := symbol.ToUpper().ToSymbol("-")
-	params.Set("size", strconv.Itoa(size))
+	params["size"] = strconv.Itoa(size)
 	if depthType, ok := options["depth"]; ok == true {
-		params.Set("depth", depthType)
+		params["depth"] = depthType
 	}
 
-	result := okexSpot.httpRequest("/api/spot/v3/instruments/" + instrumentId + "/book", "get", params, false)
+	result := spot.httpGet("/api/spot/v3/instruments/" + instrumentId + "/book", params, false)
 	if result["code"] != 0 {
 		return result
 	}
 	return result
 }
 
-func (okexSpot *OkexSpot) GetTicker(symbol Symbol) interface{} {
-	params := &url.Values{}
+// 牌价
+func (spot *OkexSpot) GetTicker(symbol Symbol) interface{} {
 	instrumentId := symbol.ToUpper().ToSymbol("-")
-	result := okexSpot.httpRequest("/api/spot/v3/instruments/" + instrumentId + "/ticker", "get", params, false)
+	result := spot.httpGet("/api/spot/v3/instruments/" + instrumentId + "/ticker", nil, false)
 	if result["code"] != 0 {
 		return result
 	}
 	return result
 }
 
-func (okexSpot *OkexSpot) GetKline(symbol Symbol, period, size int, options map[string]string) interface{} {
-	params := &url.Values{}
+// Kline
+func (spot *OkexSpot) GetKline(symbol Symbol, period, size int, options map[string]string) interface{} {
+	params := map[string]string{}
 	instrumentId := symbol.ToUpper().ToSymbol("-")
 	periodStr, ok := klinePeriod[period]
 	if ok != true {
 		periodStr = "60"
 	}
-	params.Set("granularity", periodStr)
+	params["granularity"] = periodStr
 	if size != 0 {
-		params.Set("limit", strconv.Itoa(size))
+		params["limit"] = strconv.Itoa(size)
 	}
 	if startTime, ok := options["startTime"]; ok == true {
-		params.Set("start", startTime)
+		params["start"] = startTime
 	}
 	if endTime, ok := options["endTime"]; ok == true {
-		params.Set("end", endTime)
+		params["end"] = endTime
 	}
 
-	result := okexSpot.httpRequest("/api/spot/v3/instruments/" + instrumentId + "/history/candles", "get", params,false)
+	result := spot.httpGet("/api/spot/v3/instruments/" + instrumentId + "/history/candles", params,false)
 	if result["code"] != 0 {
 		return result
 	}
 	return result
 }
 
-func (okexSpot *OkexSpot) GetTrade(symbol Symbol, size int, options map[string]string) interface{} {
-
-	params := &url.Values{}
+// 最新成交
+func (spot *OkexSpot) GetTrade(symbol Symbol, size int, options map[string]string) interface{} {
+	params := map[string]string{}
 	instrumentId := symbol.ToUpper().ToSymbol("-")
 	if size != 0 {
-		params.Set("limit", strconv.Itoa(size))
+		params["limit"] = strconv.Itoa(size)
 	}
-	result := okexSpot.httpRequest("/api/spot/v3/instruments/" + instrumentId + "/trades", "get", params, false)
+	result := spot.httpGet("/api/spot/v3/instruments/" + instrumentId + "/trades", params, false)
 	if result["code"] != 0 {
 		return result
 	}
@@ -148,35 +157,338 @@ func (okexSpot *OkexSpot) GetTrade(symbol Symbol, size int, options map[string]s
 	return result
 }
 
-func (okexSpot *OkexSpot) HttpRequest(requestUrl, method string, options map[string]string, signed bool) interface{} {
-
-	params := &url.Values{}
-	for key, value := range options {
-		params.Set(key, value)
+// 获取余额
+func (spot *OkexSpot) GetUserBalance() interface{} {
+	result := spot.httpGet("/api/spot/v3/accounts", nil, true)
+	if result["code"] != 0 {
+		return result
 	}
-
-	return okexSpot.httpRequest(requestUrl, method, params, signed)
+	return result
 }
 
-func (okexSpot *OkexSpot) httpRequest(url , method string, params *url.Values, signed bool) map[string]interface{} {
-	method = strings.ToUpper(method)
+// 批量下单
+func (spot *OkexSpot) PlaceOrder(order *PlaceOrder) interface{} {
 
-	var responseMap HttpClientResponse
-	switch method {
-	case "GET":
-		requestUrl := okexSpot.baseUrl + url + "?" + params.Encode()
-		fmt.Println(requestUrl)
-		responseMap = HttpGet(okexSpot.httpClient, requestUrl)
-	// case "POST":
-	// 	return nil
+	params := map[string]interface{}{}
+	params["instrument_id"] = order.Symbol.ToUpper().ToSymbol("-")
+	if order.ClientOrderId != "" {
+		params["client_oid"] = order.ClientOrderId
+	}
+	params["side"] = order.Side.String()
+	if order.TradeType == LIMIT {
+		params["price"] = order.Price
+		params["amount"] = order.Amount
+		switch order.TimeInForce {
+		case IOC :
+			params["order_type"] = 3
+		case FOK:
+			params["order_type"] = 2
+		case POC:
+			params["order_type"] = 1
+		}
+	} else {
+		if order.Side == BUY {
+			params["notional"] = order.Amount
+		} else {
+			params["size"] = order.Amount
+		}
+	}
+	result := spot.httpPost("/api/spot/v3/orders", params, true)
+	if result["code"] != 0 {
+		return result
 	}
 
+	return result
+}
+
+// 下限价单
+func (spot *OkexSpot) PlaceLimitOrder(symbol Symbol, price string, amount string, side TradeSide, ClientOrderId string) interface{} {
+	params := map[string]interface{}{}
+	params["instrument_id"] = symbol.ToUpper().ToSymbol("-")
+	params["price"] = price
+	params["size"] = amount
+	params["side"] = side.String()
+	params["type"] = "limit"
+	if ClientOrderId != "" {
+		params["client_oid"] = ClientOrderId
+	}
+
+	result := spot.httpPost("/api/spot/v3/orders", params, true)
+	if result["code"] != 0 {
+		return result
+	}
+
+	return result
+}
+
+// 下市价单
+func (spot *OkexSpot) PlaceMarketOrder(symbol Symbol, amount string, side TradeSide, ClientOrderId string) interface{} {
+	params := map[string]interface{}{}
+	params["instrument_id"] = symbol.ToUpper().ToSymbol("-")
+	if side == BUY {
+		params["notional"] = amount
+	} else {
+		params["size"] = amount
+	}
+	params["side"] = side.String()
+	params["type"] = "market"
+	if ClientOrderId != "" {
+		params["client_oid"] = ClientOrderId
+	}
+
+	result := spot.httpPost("/api/spot/v3/orders", params, true)
+	if result["code"] != 0 {
+		return result
+	}
+	return result
+}
+
+// 批量下限价单
+func (spot *OkexSpot) BatchPlaceLimitOrder(orders []LimitOrder) interface{} {
+
+	var params []map[string]interface{}
+	for _, item := range orders {
+		param := map[string]interface{}{}
+		param["instrument_id"] = item.Symbol.ToUpper().ToSymbol("-")
+		param["price"] = item.Price
+		param["size"] = item.Amount
+		param["side"] = item.Side.String()
+		param["type"] = LIMIT
+		if item.ClientOrderId != "" {
+			param["client_oid"] = item.ClientOrderId
+		}
+		switch item.TimeInForce {
+		case IOC :
+			param["order_type"] = 3
+		case FOK:
+			param["order_type"] = 2
+		case POC:
+			param["order_type"] = 1
+		}
+		params = append(params, param)
+	}
+
+	result := spot.httpPost("/api/spot/v3/batch_orders", params, true)
+	if result["code"] != 0 {
+		return result
+	}
+
+	return result
+}
+
+// 撤单
+func (spot *OkexSpot) CancelOrder(symbol Symbol, orderId, clientOrderId string) interface{} {
+	params := map[string]string{}
+	instrumentId := symbol.ToUpper().ToSymbol("-")
+	id := orderId
+
+	params["instrument_id"] = instrumentId
+	if clientOrderId != "" {
+		params["client_oid"] = clientOrderId
+		id = clientOrderId
+	} else {
+		params["order_id"] = orderId
+	}
+
+	result := spot.httpPost("/api/spot/v3/cancel_orders/" + id, params, true)
+	if result["code"] != 0 {
+		return result
+	}
+
+	return result
+}
+
+// 批量撤单
+func (spot *OkexSpot) BatchCancelOrder(symbol Symbol, orderIds, clientOrderIds string) interface{} {
+	param := map[string]interface{}{}
+	param["instrument_id"] = symbol.ToUpper().ToSymbol("-")
+	if clientOrderIds != "" {
+		param["client_oids"] = strings.Split(clientOrderIds, ",")
+	} else {
+		param["order_ids"] = strings.Split(orderIds, ",")
+	}
+	params := [1]map[string]interface{}{param}
+	result := spot.httpPost("/api/spot/v3/cancel_batch_orders", params, true)
+	if result["code"] != 0 {
+		return result
+	}
+
+	return result
+}
+
+// 我的当前委托单
+func (spot *OkexSpot) GetUserOpenTrustOrders(symbol Symbol, size int, options map[string]string) interface{} {
+	params := map[string]string{}
+	params["instrument_id"] = symbol.ToUpper().ToSymbol("-")
+	if size != 0 {
+		params["limit"] = strconv.Itoa(size)
+	}
+
+	if after, ok := options["after"]; ok == true {
+		params["after"] = after
+	}
+
+	if before, ok := options["before"]; ok == true {
+		params["before"] = before
+	}
+
+	result := spot.httpGet("/api/spot/v3/orders_pending", params, true)
+	if result["code"] != 0 {
+		return result
+	}
+	return result
+}
+
+// 委托单详情
+func (spot *OkexSpot) GetUserOrderInfo(symbol Symbol, orderId, clientOrderId string) interface{} {
+	params := map[string]string{}
+	params["instrument_id"] = symbol.ToUpper().ToSymbol("-")
+	id := orderId
+	if clientOrderId != "" {
+		params["client_oid"] = clientOrderId
+		id = clientOrderId
+	} else {
+		params["order_id"] = orderId
+	}
+
+	result := spot.httpGet("/api/spot/v3/orders/" + id, params, true)
+	if result["code"] != 0 {
+		return result
+	}
+	return result
+}
+
+// 我的成交单列表
+func (spot *OkexSpot) GetUserTradeOrders(symbol Symbol, size int, options map[string]string) interface{} {
+	params := map[string]string{}
+	params["instrument_id"] = symbol.ToUpper().ToSymbol("-")
+	if size != 0 {
+		params["limit"] = strconv.Itoa(size)
+	}
+
+	if orderId, ok := options["order_id"]; ok == true {
+		params["order_id"] = orderId
+	}
+
+	if after, ok := options["after"]; ok == true {
+		params["after"] = after
+	}
+
+	if before, ok := options["before"]; ok == true {
+		params["before"] = before
+	}
+
+	result := spot.httpGet("/api/spot/v3/fills", params, true)
+	if result["code"] != 0 {
+		return result
+	}
+	return result
+}
+
+// 我的委托单列表
+func (spot *OkexSpot) GetUserTrustOrders(symbol Symbol, status string, size int, options map[string]string) interface{} {
+	params := map[string]string{}
+	params["instrument_id"] = symbol.ToUpper().ToSymbol("-")
+	params["state"] = status
+
+	if size != 0 {
+		params["limit"] = strconv.Itoa(size)
+	}
+
+	if after, ok := options["after"]; ok == true {
+		params["after"] = after
+	}
+
+	if before, ok := options["before"]; ok == true {
+		params["before"] = before
+	}
+
+	result := spot.httpGet("/api/spot/v3/orders", params, true)
+	if result["code"] != 0 {
+		return result
+	}
+	return result
+}
+
+func (spot *OkexSpot) HttpRequest(requestUrl, method string, options interface{}, signed bool) interface{} {
+	method = strings.ToUpper(method)
+	switch method {
+	case HTTP_GET:
+		return spot.httpGet(requestUrl, options.(map[string]string), signed)
+	case HTTP_POST:
+		return spot.httpPost(requestUrl, options, signed)
+	}
+	return nil
+}
+
+func (spot *OkexSpot) httpGet(url string, params map[string]string, signed bool) map[string]interface{} {
+	var responseMap HttpClientResponse
+	var headers map[string]string
+	requestUrl := spot.baseUrl + url
+	reqData := ""
+	if params != nil && len(params) > 0 {
+		reqData = "?" + BuildParams(params)
+		requestUrl = requestUrl + reqData
+	}
+
+	if signed {
+		timestamp := IsoTime()
+		sign := spot.sign(url, HTTP_GET, timestamp, reqData)
+		headers = map[string]string {
+			"OK-ACCESS-KEY": spot.accessKey,
+			"OK-ACCESS-SIGN": sign,
+			"OK-ACCESS-PASSPHRASE": spot.passphrase,
+			"OK-ACCESS-TIMESTAMP": timestamp,
+		}
+	}
+
+	responseMap = HttpGetWithHeader(spot.httpClient, requestUrl, headers)
+
+	fmt.Println(requestUrl)
+
+	return spot.handlerResponse(&responseMap)
+}
+
+func (spot *OkexSpot) httpPost(url string, params interface{}, signed bool) map[string]interface{} {
+	var responseMap HttpClientResponse
+	var headers map[string]string
+	requestUrl := spot.baseUrl + url
+	reqData := ""
+	if params != nil {
+		jsonBody, _ := json.Marshal(params)
+		reqData = string(jsonBody)
+	}
+
+	timestamp := IsoTime()
+	sign := spot.sign(url, HTTP_POST, timestamp, reqData)
+	headers = map[string]string {
+		"OK-ACCESS-KEY": spot.accessKey,
+		"OK-ACCESS-SIGN": sign,
+		"OK-ACCESS-PASSPHRASE": spot.passphrase,
+		"OK-ACCESS-TIMESTAMP": timestamp,
+	}
+
+	responseMap = HttpPostWithJson(spot.httpClient, requestUrl, reqData, headers)
+
+	fmt.Println(requestUrl)
+
+	return spot.handlerResponse(&responseMap)
+}
+
+func (spot *OkexSpot) sign(url, method, timestamp, reqData string) string {
+	signStr := timestamp + method + url + reqData
+	sign, _ := HmacSha256Base64Signer(signStr, spot.secretKey)
+	return sign
+}
+
+func (spot *OkexSpot) handlerResponse(responseMap *HttpClientResponse) map[string]interface{} {
 	var returnData map[string]interface{}
 	returnData = make(map[string]interface{})
 
 	returnData["code"] = responseMap.Code
 	returnData["st"] = responseMap.St
 	returnData["et"] = responseMap.Et
+
 	if responseMap.Code != 0 {
 		returnData["msg"] = responseMap.Msg
 		returnData["error"] = responseMap.Error

@@ -169,14 +169,63 @@ func (binanceSpot *BinanceSpot) GetTrade(symbol Symbol, size int, options map[st
 	return result
 }
 
-func (binanceSpot *BinanceSpot) HttpRequest(requestUrl, method string, options map[string]string, signed bool) interface{} {
+// 获取余额
+func (spot *BinanceSpot) GetUserBalance() interface{} {
+	return nil
+}
 
-	params := &url.Values{}
-	for key, value := range options {
-		params.Set(key, value)
-	}
+// 批量下单
+func (spot *BinanceSpot) PlaceOrder(order *PlaceOrder) interface{} {
+	return nil
+}
 
-	return binanceSpot.httpRequest(requestUrl, method, params, signed)
+// 下限价单
+func (spot *BinanceSpot) PlaceLimitOrder(symbol Symbol, price string, amount string, side TradeSide, ClientOrderId string) interface{} {
+	return nil
+}
+
+// 下市价单
+func (spot *BinanceSpot) PlaceMarketOrder(symbol Symbol, amount string, side TradeSide, ClientOrderId string) interface{} {
+	return nil
+}
+
+// 批量下限价单
+func (spot *BinanceSpot) BatchPlaceLimitOrder(orders []LimitOrder) interface{} {
+	return nil
+}
+
+// 撤单
+func (spot *BinanceSpot) CancelOrder(symbol Symbol, orderId, clientOrderId string) interface{} {
+	return nil
+}
+
+// 批量撤单
+func (spot *BinanceSpot) BatchCancelOrder(symbol Symbol, orderIds, clientOrderIds string) interface{} {
+	return nil
+}
+
+// 我的当前委托单
+func (spot *BinanceSpot) GetUserOpenTrustOrders(symbol Symbol, size int, options map[string]string) interface{} {
+	return nil
+}
+
+// 委托单详情
+func (spot *BinanceSpot) GetUserOrderInfo(symbol Symbol, orderId, clientOrderId string) interface{} {
+	return nil
+}
+
+// 我的成交单列表
+func (spot *BinanceSpot) GetUserTradeOrders(symbol Symbol, size int, options map[string]string) interface{} {
+	return nil
+}
+
+// 我的委托单列表
+func (spot *BinanceSpot) GetUserTrustOrders(symbol Symbol, status string, size int, options map[string]string) interface{} {
+	return nil
+}
+
+func (binanceSpot *BinanceSpot) HttpRequest(requestUrl, method string, options interface{}, signed bool) interface{} {
+	return nil
 }
 
 func (binanceSpot *BinanceSpot) httpRequest(url , method string, params *url.Values, signed bool) map[string]interface{} {

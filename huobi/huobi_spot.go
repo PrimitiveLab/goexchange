@@ -164,14 +164,63 @@ func (hb *HuobiSpot) GetTrade(symbol Symbol, size int, options map[string]string
 	return result
 }
 
-func (hb *HuobiSpot) HttpRequest(requestUrl, method string, options map[string]string, signed bool) interface{} {
+// 获取余额
+func (spot *HuobiSpot) GetUserBalance() interface{} {
+	return nil
+}
 
-	params := &url.Values{}
-	for key, value := range options {
-		params.Set(key, value)
-	}
+// 批量下单
+func (spot *HuobiSpot) PlaceOrder(order *PlaceOrder) interface{} {
+	return nil
+}
 
-	return hb.httpRequest(requestUrl, method, params, signed)
+// 下限价单
+func (spot *HuobiSpot) PlaceLimitOrder(symbol Symbol, price string, amount string, side TradeSide, ClientOrderId string) interface{} {
+	return nil
+}
+
+// 下市价单
+func (spot *HuobiSpot) PlaceMarketOrder(symbol Symbol, amount string, side TradeSide, ClientOrderId string) interface{} {
+	return nil
+}
+
+// 批量下限价单
+func (spot *HuobiSpot) BatchPlaceLimitOrder(orders []LimitOrder) interface{} {
+	return nil
+}
+
+// 撤单
+func (spot *HuobiSpot) CancelOrder(symbol Symbol, orderId, clientOrderId string) interface{} {
+	return nil
+}
+
+// 批量撤单
+func (spot *HuobiSpot) BatchCancelOrder(symbol Symbol, orderIds, clientOrderIds string) interface{} {
+	return nil
+}
+
+// 我的当前委托单
+func (spot *HuobiSpot) GetUserOpenTrustOrders(symbol Symbol, size int, options map[string]string) interface{} {
+	return nil
+}
+
+// 委托单详情
+func (spot *HuobiSpot) GetUserOrderInfo(symbol Symbol, orderId, clientOrderId string) interface{} {
+	return nil
+}
+
+// 我的成交单列表
+func (spot *HuobiSpot) GetUserTradeOrders(symbol Symbol, size int, options map[string]string) interface{} {
+	return nil
+}
+
+// 我的委托单列表
+func (spot *HuobiSpot) GetUserTrustOrders(symbol Symbol, status string, size int, options map[string]string) interface{} {
+	return nil
+}
+
+func (hb *HuobiSpot) HttpRequest(requestUrl, method string, options interface{}, signed bool) interface{} {
+	return nil
 }
 
 func (hb *HuobiSpot) httpRequest(url, method string, params *url.Values, signed bool) map[string]interface{} {

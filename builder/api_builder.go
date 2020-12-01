@@ -166,17 +166,25 @@ func (builder *APIBuilder) Endpoint(endpoint string) (_builer *APIBuilder) {
 }
 
 func (builder *APIBuilder) Build(exName string) (api SpotAPI) {
+	config := APIConfig{}
+	config.HttpClient = builder.client
+	config.ApiKey = builder.apiKey
+	config.ApiSecretKey = builder.secretKey
+	config.ApiPassphrase = builder.passphrase
+	config.Endpoint = builder.endPoint
+	config.AccountId = builder.accountId
+
 	switch exName {
 	case ECHANGE_BINANCE:
-		api = binance.New(builder.client, builder.apiKey, builder.secretKey)
+		api = binance.NewWithConfig(&config)
 	case ECHANGE_HUOBI:
-		api = huobi.New(builder.client, builder.apiKey, builder.secretKey, builder.accountId)
+		api = huobi.NewWithConfig(&config)
 	case ECHANGE_OKEX:
-		api = okex.New(builder.client, builder.apiKey, builder.secretKey)
+		api = okex.NewWithConfig(&config)
 	case ECHANGE_GATE:
-		api = gate.New(builder.client, builder.apiKey, builder.secretKey)
+		api = gate.NewWithConfig(&config)
 	case ECHANGE_BITZ:
-		api = bitz.New(builder.client, builder.apiKey, builder.secretKey)
+		api = bitz.NewWithConfig(&config)
 	default:
 		println("exchange name error [" + exName + "].")
 	}

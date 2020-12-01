@@ -1,29 +1,42 @@
 package goexchange
 
 
-// 现货交易方向
+// 交易方向
 type TradeSide int
 const (
-	LIMIT_BUY TradeSide = iota + 1
-	LIMIT_SELL
-	MARKET_BUY
-	MARKET_SELL
+	BUY  TradeSide = 1
+	SELL TradeSide = -1
 )
 
 func (ts TradeSide) String() string {
 	switch ts {
-	case 1:
-		return "limit-buy"
-	case 2:
-		return "limit-sell"
-	case 3:
-		return "market-buy"
-	case 4:
-		return "market-sell"
+	case BUY:
+		return "buy"
+	case SELL:
+		return "sell"
 	default:
 		return "unknown"
 	}
 }
+
+// Time in force 策略
+type TimeInForce int
+const (
+	// 成交为止
+	GTC TimeInForce = 0
+	// 只吃单不挂单(只做taker单).
+	POC TimeInForce = 1
+	// 立即成交并取消剩余,只吃单不挂单(只做taker单).
+	IOC TimeInForce = 2
+	// 全部成交或立即取消,如果无法全部成交，订单会失效
+	FOK TimeInForce = 3
+)
+
+// 交易类型
+const (
+	LIMIT  string = "limit"
+	MARKET string = "market"
+)
 
 // k线周期
 const (
