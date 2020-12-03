@@ -193,7 +193,9 @@ func (spot *OkexSpot) PlaceOrder(order *PlaceOrder) interface{} {
 			params["size"] = order.Amount
 		}
 	}
-	return spot.httpPost("/api/spot/v3/orders", params, true)
+	retData := spot.httpPost("/api/spot/v3/orders", params, true)
+	spot.handlerError(retData)
+	return retData
 }
 
 // 下限价单
@@ -208,7 +210,9 @@ func (spot *OkexSpot) PlaceLimitOrder(symbol Symbol, price string, amount string
 		params["client_oid"] = ClientOrderId
 	}
 
-	return spot.httpPost("/api/spot/v3/orders", params, true)
+	retData := spot.httpPost("/api/spot/v3/orders", params, true)
+	spot.handlerError(retData)
+	return retData
 }
 
 // 下市价单
@@ -226,7 +230,9 @@ func (spot *OkexSpot) PlaceMarketOrder(symbol Symbol, amount string, side TradeS
 		params["client_oid"] = ClientOrderId
 	}
 
-	return spot.httpPost("/api/spot/v3/orders", params, true)
+	retData := spot.httpPost("/api/spot/v3/orders", params, true)
+	spot.handlerError(retData)
+	return retData
 }
 
 // 批量下限价单
@@ -271,7 +277,9 @@ func (spot *OkexSpot) CancelOrder(symbol Symbol, orderId, clientOrderId string) 
 		params["order_id"] = orderId
 	}
 
-	return spot.httpPost("/api/spot/v3/cancel_orders/" + id, params, true)
+	retData := spot.httpPost("/api/spot/v3/cancel_orders/" + id, params, true)
+	spot.handlerError(retData)
+	return retData
 }
 
 // 批量撤单
@@ -443,16 +451,7 @@ func (spot *OkexSpot) httpPost(url string, params interface{}, signed bool) map[
 
 	fmt.Println(requestUrl)
 
-	retData := spot.handlerResponse(&responseMap)
-	if retData["code"] == 0 {
-		data := retData["data"].(map[string]interface{})
-		if data["error_code"].(string) != "0" {
-			retData["code"] = data["error_code"].(string)
-			retData["msg"] = data["error_message"].(string)
-			retData["data"] = nil
-		}
-	}
-	return retData
+	return spot.handlerResponse(&responseMap)
 }
 
 func (spot *OkexSpot) sign(url, method, timestamp, reqData string) string {
@@ -487,4 +486,16 @@ func (spot *OkexSpot) handlerResponse(responseMap *HttpClientResponse) map[strin
 
 	returnData["data"] = bodyDataMap
 	return returnData
+}
+
+func (spot *OkexSpot) handlerError(retData map[string]interface{}) {
+	if retData["code"] == 0 {
+		data := retData["data"].(map[string]interface{})
+		if data["error_code"].(string) != "0" {
+			retData["code"] = data["error_code"].(string)
+			retData["msg"] = data["error_message"].(string)
+			retData["error"] = retData["msg"]
+			retData["data"] = nil
+		}
+	}
 }
