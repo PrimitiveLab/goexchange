@@ -96,7 +96,7 @@ func TestGetUserOrderInfo(t *testing.T) {
 	market := New(client, "", apiKey, secretKey, passphrase)
 
 	// symbol Symbol, status string, size int, options map[string]string
-	response := market.GetUserOrderInfo(NewSymbol("btc", "usdt"),"6028843635265536", "")
+	response := market.GetUserOrderInfo(NewSymbol("btc", "usdt"),"60288436352655361", "")
 	b, _ := json.Marshal(response)
 	t.Log(string(b))
 }
@@ -110,11 +110,11 @@ func TestGetUserOpenTrustOrders(t *testing.T) {
 	t.Log(string(b))
 }
 
-func TestOkexSpot_PlaceLimitOrderOrders(t *testing.T) {
+func TestOkexSpot_PlaceLimitOrder(t *testing.T) {
 	market := New(client, "", apiKey, secretKey, passphrase)
 
 	// symbol Symbol, status string, size int, options map[string]string
-	response := market.PlaceLimitOrder(NewSymbol("btc", "usdt"),"13", "1", BUY, "a1234444445")
+	response := market.PlaceLimitOrder(NewSymbol("link", "usdt"),"13", "1", BUY, "")
 	b, _ := json.Marshal(response)
 	t.Log(string(b))
 }
@@ -147,7 +147,7 @@ func TestOkexSpot_CancelOrder(t *testing.T) {
 	market := New(client, "", apiKey, secretKey, passphrase)
 
 	// symbol Symbol, status string, size int, options map[string]string
-	response := market.CancelOrder(NewSymbol("btc", "usdt"),"", "a1234444444")
+	response := market.CancelOrder(NewSymbol("link", "usdt"),"6045175117077504", "")
 	b, _ := json.Marshal(response)
 	t.Log(string(b))
 }

@@ -193,12 +193,7 @@ func (spot *OkexSpot) PlaceOrder(order *PlaceOrder) interface{} {
 			params["size"] = order.Amount
 		}
 	}
-	result := spot.httpPost("/api/spot/v3/orders", params, true)
-	if result["code"] != 0 {
-		return result
-	}
-
-	return result
+	return spot.httpPost("/api/spot/v3/orders", params, true)
 }
 
 // 下限价单
@@ -213,12 +208,7 @@ func (spot *OkexSpot) PlaceLimitOrder(symbol Symbol, price string, amount string
 		params["client_oid"] = ClientOrderId
 	}
 
-	result := spot.httpPost("/api/spot/v3/orders", params, true)
-	if result["code"] != 0 {
-		return result
-	}
-
-	return result
+	return spot.httpPost("/api/spot/v3/orders", params, true)
 }
 
 // 下市价单
@@ -236,11 +226,7 @@ func (spot *OkexSpot) PlaceMarketOrder(symbol Symbol, amount string, side TradeS
 		params["client_oid"] = ClientOrderId
 	}
 
-	result := spot.httpPost("/api/spot/v3/orders", params, true)
-	if result["code"] != 0 {
-		return result
-	}
-	return result
+	return spot.httpPost("/api/spot/v3/orders", params, true)
 }
 
 // 批量下限价单
@@ -268,12 +254,7 @@ func (spot *OkexSpot) BatchPlaceLimitOrder(orders []LimitOrder) interface{} {
 		params = append(params, param)
 	}
 
-	result := spot.httpPost("/api/spot/v3/batch_orders", params, true)
-	if result["code"] != 0 {
-		return result
-	}
-
-	return result
+	return spot.httpPost("/api/spot/v3/batch_orders", params, true)
 }
 
 // 撤单
@@ -290,12 +271,7 @@ func (spot *OkexSpot) CancelOrder(symbol Symbol, orderId, clientOrderId string) 
 		params["order_id"] = orderId
 	}
 
-	result := spot.httpPost("/api/spot/v3/cancel_orders/" + id, params, true)
-	if result["code"] != 0 {
-		return result
-	}
-
-	return result
+	return spot.httpPost("/api/spot/v3/cancel_orders/" + id, params, true)
 }
 
 // 批量撤单
@@ -308,12 +284,7 @@ func (spot *OkexSpot) BatchCancelOrder(symbol Symbol, orderIds, clientOrderIds s
 		param["order_ids"] = strings.Split(orderIds, ",")
 	}
 	params := [1]map[string]interface{}{param}
-	result := spot.httpPost("/api/spot/v3/cancel_batch_orders", params, true)
-	if result["code"] != 0 {
-		return result
-	}
-
-	return result
+	return spot.httpPost("/api/spot/v3/cancel_batch_orders", params, true)
 }
 
 // 我的当前委托单
@@ -472,7 +443,16 @@ func (spot *OkexSpot) httpPost(url string, params interface{}, signed bool) map[
 
 	fmt.Println(requestUrl)
 
-	return spot.handlerResponse(&responseMap)
+	retData := spot.handlerResponse(&responseMap)
+	if retData["code"] == 0 {
+		data := retData["data"].(map[string]interface{})
+		if data["error_code"].(string) != "0" {
+			retData["code"] = data["error_code"].(string)
+			retData["msg"] = data["error_message"].(string)
+			retData["data"] = nil
+		}
+	}
+	return retData
 }
 
 func (spot *OkexSpot) sign(url, method, timestamp, reqData string) string {
