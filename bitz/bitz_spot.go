@@ -3,15 +3,19 @@ package bitz
 import (
 	"encoding/json"
 	"fmt"
+	. "github.com/primitivelab/goexchange"
 	"log"
 	"net/http"
 	"net/url"
+	"sort"
 	"strconv"
 	"strings"
-
-	. "github.com/primitivelab/goexchange"
 )
 
+const (
+	BITZ_BUY string = "1"
+	BITZ_SELL string = "2"
+)
 
 var klinePeriod = map[int]string {
 	KLINE_PERIOD_1MINUTE:   "1min",
@@ -33,14 +37,20 @@ type BitzSpot struct {
 	baseUrl string
 	accessKey string
 	secretKey string
+	passphrase string
 }
 
-func New(client *http.Client, apiKey, secretKey string) *BitzSpot {
+func New(client *http.Client, baseUrl, apiKey, secretKey, passphrase string) *BitzSpot {
 	instance := new(BitzSpot)
-	instance.baseUrl = "https://apiv2.bitz.com"
+	if baseUrl == "" {
+		instance.baseUrl = "https://apiv2.bitz.com"
+	} else {
+		instance.baseUrl = baseUrl
+	}
 	instance.httpClient = client
 	instance.accessKey = apiKey
 	instance.secretKey = secretKey
+	instance.passphrase = passphrase
 	return instance
 }
 
@@ -54,16 +64,17 @@ func NewWithConfig(config *APIConfig) *BitzSpot {
 	instance.httpClient = config.HttpClient
 	instance.accessKey = config.ApiKey
 	instance.secretKey = config.ApiSecretKey
+	instance.passphrase = config.ApiPassphrase
 	return instance
 }
 
-func (bitzSpot *BitzSpot) GetExchangeName() string {
+func (spot *BitzSpot) GetExchangeName() string {
 	return ECHANGE_BITZ
 }
 
-func (bitzSpot *BitzSpot) GetCoinList() interface{} {
+func (spot *BitzSpot) GetCoinList() interface{} {
 	params := &url.Values{}
-	result := bitzSpot.httpRequest("/api2/1/coininfo", "get", params, false)
+	result := spot.httpRequest("/api2/1/coininfo", "get", params, false)
 	if result["code"] != 0 {
 		return result
 	}
@@ -71,36 +82,36 @@ func (bitzSpot *BitzSpot) GetCoinList() interface{} {
 	return result
 }
 
-func (bitzSpot *BitzSpot) GetSymbolList() interface{} {
+func (spot *BitzSpot) GetSymbolList() interface{} {
 	params := &url.Values{}
-	result := bitzSpot.httpRequest("/Market/symbolList","get", params, false)
+	result := spot.httpRequest("/Market/symbolList","get", params, false)
 	if result["code"] != 0 {
 		return result
 	}
 	return result
 }
 
-func (bitzSpot *BitzSpot) GetDepth(symbol Symbol, size int, options map[string]string) map[string]interface{} {
-	params := &url.Values{}
-	params.Set("symbol", symbol.ToSymbol("_"))
-	result := bitzSpot.httpRequest("/Market/depth", "get", params, false)
-	if result["code"] != 0 {
-		return result
-	}
-	return result
-}
-
-func (bitzSpot *BitzSpot) GetTicker(symbol Symbol) interface{} {
+func (spot *BitzSpot) GetDepth(symbol Symbol, size int, options map[string]string) map[string]interface{} {
 	params := &url.Values{}
 	params.Set("symbol", symbol.ToSymbol("_"))
-	result := bitzSpot.httpRequest("/Market/ticker", "get", params, false)
+	result := spot.httpRequest("/Market/depth", "get", params, false)
 	if result["code"] != 0 {
 		return result
 	}
 	return result
 }
 
-func (bitzSpot *BitzSpot) GetKline(symbol Symbol, period, size int, options map[string]string) interface{} {
+func (spot *BitzSpot) GetTicker(symbol Symbol) interface{} {
+	params := &url.Values{}
+	params.Set("symbol", symbol.ToSymbol("_"))
+	result := spot.httpRequest("/Market/ticker", "get", params, false)
+	if result["code"] != 0 {
+		return result
+	}
+	return result
+}
+
+func (spot *BitzSpot) GetKline(symbol Symbol, period, size int, options map[string]string) interface{} {
 	params := &url.Values{}
 	params.Set("symbol", symbol.ToSymbol("_"))
 	periodStr, ok := klinePeriod[period]
@@ -115,17 +126,17 @@ func (bitzSpot *BitzSpot) GetKline(symbol Symbol, period, size int, options map[
 		params.Set("to", endTime)
 	}
 
-	result := bitzSpot.httpRequest("/Market/kline", "get", params,false)
+	result := spot.httpRequest("/Market/kline", "get", params,false)
 	if result["code"] != 0 {
 		return result
 	}
 	return result
 }
 
-func (bitzSpot *BitzSpot) GetTrade(symbol Symbol, size int, options map[string]string) interface{} {
+func (spot *BitzSpot) GetTrade(symbol Symbol, size int, options map[string]string) interface{} {
 	params := &url.Values{}
 	params.Set("symbol", symbol.ToSymbol("_"))
-	result := bitzSpot.httpRequest("/Market/order", "get", params, false)
+	result := spot.httpRequest("/Market/order", "get", params, false)
 	if result["code"] != 0 {
 		return result
 	}
@@ -135,7 +146,13 @@ func (bitzSpot *BitzSpot) GetTrade(symbol Symbol, size int, options map[string]s
 
 // 获取余额
 func (spot *BitzSpot) GetUserBalance() interface{} {
-	return nil
+	params := &url.Values{}
+	result := spot.httpRequest("/Assets/getUserAssets", HTTP_POST, params, true)
+	if result["code"] != 0 {
+		return result
+	}
+
+	return result
 }
 
 // 批量下单
@@ -145,37 +162,124 @@ func (spot *BitzSpot) PlaceOrder(order *PlaceOrder) interface{} {
 
 // 下限价单
 func (spot *BitzSpot) PlaceLimitOrder(symbol Symbol, price string, amount string, side TradeSide, ClientOrderId string) interface{} {
-	return nil
+	params := &url.Values{}
+	params.Set("symbol", symbol.String())
+	params.Set("price", price)
+	params.Set("number", amount)
+	params.Set("type", BITZ_BUY)
+	if side == SELL {
+		params.Set("type", BITZ_SELL)
+	}
+	params.Set("tradePwd", spot.passphrase)
+	result := spot.httpRequest("/Trade/addEntrustSheet", HTTP_POST, params, true)
+	if result["code"] != 0 {
+		return result
+	}
+	return result
 }
 
 // 下市价单
 func (spot *BitzSpot) PlaceMarketOrder(symbol Symbol, amount string, side TradeSide, ClientOrderId string) interface{} {
-	return nil
+	params := &url.Values{}
+	params.Set("symbol", symbol.String())
+	params.Set("total", amount)
+	params.Set("type", BITZ_BUY)
+	if side == SELL {
+		params.Set("type", BITZ_SELL)
+	}
+	params.Set("tradePwd", spot.passphrase)
+	result := spot.httpRequest("/Trade/MarketTrade", HTTP_POST, params, true)
+	if result["code"] != 0 {
+		return result
+	}
+	return result
 }
 
 // 批量下限价单
 func (spot *BitzSpot) BatchPlaceLimitOrder(orders []LimitOrder) interface{} {
-	return nil
+	var trustOrders []map[string]interface{}
+	tradePwd := Md5Signer(spot.passphrase)
+	for _, item := range orders {
+		param := map[string]interface{}{}
+		param["coins"] = item.Symbol.String()
+		param["price"] = item.Price
+		param["number"] = item.Amount
+		param["type"] = BITZ_BUY
+		if item.Side == SELL {
+			param["type"] = BITZ_SELL
+		}
+		param["tradepwd"] = tradePwd
+		trustOrders = append(trustOrders, param)
+	}
+	fmt.Println(trustOrders)
+	jsonBody, _ := json.Marshal(trustOrders)
+
+	params := &url.Values{}
+	params.Set("tradeData", string(jsonBody))
+	return spot.httpRequest("/Trade/addEntrustSheetBatch", HTTP_POST, params, true)
 }
 
 // 撤单
 func (spot *BitzSpot) CancelOrder(symbol Symbol, orderId, clientOrderId string) interface{} {
-	return nil
+	params := &url.Values{}
+	params.Set("entrustSheetId", orderId)
+	result := spot.httpRequest("/Trade/cancelEntrustSheet", HTTP_POST, params, true)
+	if result["code"] != 0 {
+		return result
+	}
+	return result
 }
 
 // 批量撤单
 func (spot *BitzSpot) BatchCancelOrder(symbol Symbol, orderIds, clientOrderIds string) interface{} {
-	return nil
+	params := &url.Values{}
+	params.Set("ids", orderIds)
+	result := spot.httpRequest("/Trade/cancelAllEntrustSheet", HTTP_POST, params, true)
+	if result["code"] != 0 {
+		return result
+	}
+	return result
 }
 
 // 我的当前委托单
 func (spot *BitzSpot) GetUserOpenTrustOrders(symbol Symbol, size int, options map[string]string) interface{} {
-	return nil
+	params := &url.Values{}
+	params.Set("coinFrom", symbol.CoinFrom)
+	params.Set("coinTo", symbol.CoinTo)
+	if size != 0 {
+		params.Set("pageSize", strconv.Itoa(size))
+	}
+
+	if side, ok := options["type"]; ok == true {
+		params.Set("type", side)
+	}
+
+	if page, ok := options["page"]; ok == true {
+		params.Set("page", page)
+	}
+	if startTime, ok := options["startTime"]; ok == true {
+		params.Set("startTime", startTime)
+	}
+	if endTime, ok := options["endTime"]; ok == true {
+		params.Set("endTime", endTime)
+	}
+
+	result := spot.httpRequest("/Trade/getUserNowEntrustSheet", HTTP_POST, params, true)
+	if result["code"] != 0 {
+		return result
+	}
+	return result
 }
 
 // 委托单详情
 func (spot *BitzSpot) GetUserOrderInfo(symbol Symbol, orderId, clientOrderId string) interface{} {
-	return nil
+	params := &url.Values{}
+	params.Set("entrustSheetId", orderId)
+	result := spot.httpRequest("/Trade/getEntrustSheetInfo", HTTP_POST, params, true)
+	if result["code"] != 0 {
+		return result
+	}
+	return result
 }
 
 // 我的成交单列表
@@ -185,26 +289,60 @@ func (spot *BitzSpot) GetUserTradeOrders(symbol Symbol, size int, options map[st
 
 // 我的委托单列表
 func (spot *BitzSpot) GetUserTrustOrders(symbol Symbol, status string, size int, options map[string]string) interface{} {
-	return nil
+	params := &url.Values{}
+	params.Set("coinFrom", symbol.CoinFrom)
+	params.Set("coinTo", symbol.CoinTo)
+	if size != 0 {
+		params.Set("pageSize", strconv.Itoa(size))
+	}
+
+	if side, ok := options["type"]; ok == true {
+		params.Set("type", side)
+	}
+
+	if page, ok := options["page"]; ok == true {
+		params.Set("page", page)
+	}
+	if startTime, ok := options["startTime"]; ok == true {
+		params.Set("startTime", startTime)
+	}
+	if endTime, ok := options["endTime"]; ok == true {
+		params.Set("endTime", endTime)
+	}
+
+	result := spot.httpRequest("/Trade/getUserHistoryEntrustSheet", HTTP_POST, params, true)
+	if result["code"] != 0 {
+		return result
+	}
+	return result
 }
 
-func (bitzSpot *BitzSpot) HttpRequest(requestUrl, method string, options interface{}, signed bool) interface{} {
-
-	return nil
+func (spot *BitzSpot) HttpRequest(requestUrl, method string, options interface{}, signed bool) interface{} {
+	params := &url.Values{}
+	mapOptions := options.(map[string]string)
+	for key, val := range mapOptions {
+		params.Set(key, val)
+	}
+	return spot.httpRequest(requestUrl, strings.ToUpper(method), params, signed)
 }
 
-func (bitzSpot *BitzSpot) httpRequest(url , method string, params *url.Values, signed bool) map[string]interface{} {
+func (spot *BitzSpot) httpRequest(url , method string, params *url.Values, signed bool) map[string]interface{} {
 	method = strings.ToUpper(method)
 
 	var responseMap HttpClientResponse
+	requestUrl := spot.baseUrl + url
 	switch method {
-	case "GET":
-		requestUrl := bitzSpot.baseUrl + url + "?" + params.Encode()
-		fmt.Println(requestUrl)
-		responseMap = HttpGet(bitzSpot.httpClient, requestUrl)
-	// case "POST":
-	// 	return nil
+	case HTTP_GET:
+		if params != nil {
+			requestUrl = requestUrl + "?" + params.Encode()
+		}
+		responseMap = HttpGet(spot.httpClient, requestUrl)
+	case HTTP_POST:
+		params.Set("sign", spot.sign(*params))
+		responseMap = HttpPost(spot.httpClient, requestUrl, params.Encode())
 	}
+
+	fmt.Println(requestUrl)
 
 	var returnData map[string]interface{}
 	returnData = make(map[string]interface{})
@@ -231,14 +369,41 @@ func (bitzSpot *BitzSpot) httpRequest(url , method string, params *url.Values, s
 	if 200 != resStatus {
 		returnData["code"] = ExchangeError.Code
 		returnData["msg"] = ExchangeError.Msg
-		returnData["error"] = fmt.Sprintf("%g: %s", resStatus, bitzSpot.getError(resStatus))
+		returnData["error"] = fmt.Sprintf("%g: %s", resStatus, spot.getError(resStatus))
 		return returnData
 	}
 	returnData["data"] = bodyDataMap["data"]
 	return returnData
 }
 
-func (bitzSpot *BitzSpot) getError(code float64) string  {
+func (spot *BitzSpot) sign(params url.Values) string {
+
+	timestamp := GetNowTimestampStr()
+	params.Set("apiKey", spot.accessKey)
+	params.Set("timeStamp", timestamp)
+	params.Set("nonce", timestamp[3:])
+
+	var buf strings.Builder
+	keys := make([]string, 0, len(params))
+	for k := range params {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	for _, k := range keys {
+		vs := params[k]
+		if buf.Len() > 0 {
+			buf.WriteByte('&')
+		}
+		buf.WriteString(k)
+		buf.WriteByte('=')
+		buf.WriteString(vs[0])
+	}
+
+	signStr := buf.String() + spot.secretKey
+	return Md5Signer(signStr)
+}
+
+func (spot *BitzSpot) getError(code float64) string  {
 	errorMap := map[float64]string{
 		200:"成功",
 		-102:"参数错误",

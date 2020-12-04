@@ -73,16 +73,14 @@ func HttpGetWithHeader(client *http.Client, reqUrl string, headers map[string]st
 	return respData
 }
 
-// func HttpPostForm(client *http.Client, reqUrl string, postData url.Values) ([]byte, [2]int64,error) {
-// 	headers := map[string]string{
-// 		"Content-Type": "application/x-www-form-urlencoded"}
-// 	return NewHttpRequest(client, "POST", reqUrl, postData.Encode(), headers)
-// }
-//
+func HttpPost(client *http.Client, reqUrl string, postData string) HttpClientResponse {
+	headers := map[string]string{"Content-Type": "application/x-www-form-urlencoded"}
+	return NewHttpRequest(client, "POST", reqUrl, postData, headers)
+}
+
 
 func HttpPostWithJson(client *http.Client, reqUrl string, postData string, headers map[string]string) HttpClientResponse {
 	headers["Content-Type"] = "application/json; charset=UTF-8"
-
 	return NewHttpRequest(client, "POST", reqUrl, postData, headers)
 }
 

@@ -43,7 +43,6 @@ func New(client *http.Client, baseUrl string, apiKey, secretKey string, passphra
 	} else {
 		instance.baseUrl = baseUrl
 	}
-	instance.baseUrl = "https://www.okex.com"
 	instance.httpClient = client
 	instance.accessKey = apiKey
 	instance.secretKey = secretKey
