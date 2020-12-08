@@ -1,15 +1,16 @@
 package goexchange
 
 type ApiStatusCode struct {
-	Code 		int
-	Msg 		string
+	Code int
+	Msg  string
 }
+
 var (
 	HttpClientInternalError = ApiStatusCode{Code: 1001, Msg: "http client internal error"}
-	JsonUnmarshalError 		= ApiStatusCode{Code: 1002, Msg: "http response data unmarshal(json) error"}
-	ExchangeError 			= ApiStatusCode{Code: 1003, Msg: "exchange api error"}
-	HttpRequestError 		= ApiStatusCode{Code: 404, Msg: "http request error"}
-
+	JsonUnmarshalError      = ApiStatusCode{Code: 1002, Msg: "http response data unmarshal(json) error"}
+	ExchangeError           = ApiStatusCode{Code: 1003, Msg: "exchange api error"}
+	HttpRequestError        = ApiStatusCode{Code: 404, Msg: "http request error"}
+	MethodNotExistError     = ApiStatusCode{Code: 1004, Msg: "method is not exist"}
 
 	// HTTP_ERR_CODE                = ApiError{Code: "HTTP_ERR_0001", Msg: "http request error"}
 	// EX_ERR_API_LIMIT             = ApiError{Code: "EX_ERR_1000", Msg: "api limited"}

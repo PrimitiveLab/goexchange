@@ -70,4 +70,5 @@ const (
 	ECHANGE_GATE      	= "gate"
 	ECHANGE_KUCOIN  	= "kucoin"
 	ECHANGE_BITZ  		= "bitz"
+	ECHANGE_MCX  		= "mxc"
 )

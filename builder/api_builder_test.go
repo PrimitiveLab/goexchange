@@ -6,9 +6,10 @@ import (
 )
 
 func TestGetDepth(t *testing.T) {
-
-	api := DefaultAPIBuilder.Build("huobi")
-	t.Log(api.GetDepth(goexchange.NewSymbol("btc", "usdt"), 4, map[string]string{"type":"step0"}))
+	DefaultAPIBuilder.APIKey("")
+	DefaultAPIBuilder.APISecretKey("")
+	api := DefaultAPIBuilder.Build("mxc")
+	t.Log(api.GetDepth(goexchange.NewSymbol("btc", "usdt"), 4, map[string]string{"type": "step0"}))
 }
 
 func TestGetUserBalance(t *testing.T) {

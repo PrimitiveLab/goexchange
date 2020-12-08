@@ -78,10 +78,13 @@ func HttpPost(client *http.Client, reqUrl string, postData string) HttpClientRes
 	return NewHttpRequest(client, "POST", reqUrl, postData, headers)
 }
 
-
 func HttpPostWithJson(client *http.Client, reqUrl string, postData string, headers map[string]string) HttpClientResponse {
 	headers["Content-Type"] = "application/json; charset=UTF-8"
 	return NewHttpRequest(client, "POST", reqUrl, postData, headers)
+}
+
+func HttpDelete(client *http.Client, reqUrl string) HttpClientResponse {
+	return NewHttpRequest(client, "DELETE", reqUrl, "", nil)
 }
 
 //
@@ -91,13 +94,7 @@ func HttpPostWithJson(client *http.Client, reqUrl string, postData string, heade
 // 	return NewHttpRequest(client, "POST", reqUrl, postData.Encode(), headers)
 // }
 //
-// func HttpDelete(client *http.Client, reqUrl string, postData url.Values, headers map[string]string) ([]byte,[2]int64, error) {
-// 	if headers == nil {
-// 		headers = map[string]string{}
-// 	}
-// 	headers["Content-Type"] = "application/x-www-form-urlencoded"
-// 	return NewHttpRequest(client, "DELETE", reqUrl, postData.Encode(), headers)
-// }
+
 //
 // func HttpDeleteWithForm(client *http.Client, reqUrl string, postData url.Values, headers map[string]string) ([]byte, [2]int64, error) {
 // 	if headers == nil {
