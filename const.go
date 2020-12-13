@@ -1,8 +1,8 @@
 package goexchange
 
-
 // 交易方向
 type TradeSide int
+
 const (
 	BUY  TradeSide = 1
 	SELL TradeSide = -1
@@ -21,6 +21,7 @@ func (ts TradeSide) String() string {
 
 // Time in force 策略
 type TimeInForce int
+
 const (
 	// 成交为止
 	GTC TimeInForce = 0
@@ -64,11 +65,12 @@ const (
 
 // exchange name const
 const (
-	ECHANGE_OKEX       	= "okex"
-	ECHANGE_HUOBI   	= "huobi"
-	ECHANGE_BINANCE    	= "binance"
-	ECHANGE_GATE      	= "gate"
-	ECHANGE_KUCOIN  	= "kucoin"
-	ECHANGE_BITZ  		= "bitz"
-	ECHANGE_MCX  		= "mxc"
+	ECHANGE_OKEX    = "okex"
+	ECHANGE_HUOBI   = "huobi"
+	ECHANGE_BINANCE = "binance"
+	ECHANGE_GATE    = "gate"
+	ECHANGE_KUCOIN  = "kucoin"
+	ECHANGE_BITZ    = "bitz"
+	ECHANGE_MCX     = "mxc"
+	ECHANGE_HOO     = "hoo"
 )
