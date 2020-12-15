@@ -5,8 +5,11 @@ import (
 	"crypto/md5"
 	"crypto/sha256"
 	"encoding/base64"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"net/url"
+	"os"
 	"strconv"
 	"time"
 )
@@ -71,4 +74,23 @@ func BuildParams(params map[string]string) string {
 		urlParams.Add(k, (params)[k])
 	}
 	return urlParams.Encode()
+}
+
+// LoadConfig load exchange config
+func LoadConfig(exchange string) (map[string]interface{}, error) {
+	file, err := os.Open("../config.json")
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	decoder := json.NewDecoder(file)
+	result := map[string]interface{}{}
+	decoder.Decode(&result)
+
+	// retData := map[string]string{}
+	if _, ok := result[exchange]; !ok {
+		return nil, errors.New("exchange exist")
+	}
+	return result[exchange].(map[string]interface{}), nil
 }
