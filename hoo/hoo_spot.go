@@ -322,7 +322,6 @@ func (spot *HooSpot) handlerResponse(responseMap *HttpClientResponse) map[string
 		returnData["error"] = returnData["msg"]
 		return returnData
 	}
-	fmt.Println(bodyDataMap)
 	returnData["data"] = bodyDataMap["data"]
 	return returnData
 }
