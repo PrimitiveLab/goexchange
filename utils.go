@@ -4,6 +4,7 @@ import (
 	"crypto/hmac"
 	"crypto/md5"
 	"crypto/sha256"
+	"crypto/sha512"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -34,6 +35,16 @@ func HmacSha256Signer(message string, secretKey string) (string, error) {
 	return fmt.Sprintf("%x", mac.Sum(nil)), nil
 }
 
+// signing a message  using: hmac sha512
+func HmacSha512Signer(message string, secretKey string) (string, error) {
+	mac := hmac.New(sha512.New, []byte(secretKey))
+	_, err := mac.Write([]byte(message))
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%x", mac.Sum(nil)), nil
+}
+
 // md5 sign
 func Md5Signer(message string) string {
 	has := md5.Sum([]byte(message))
@@ -53,6 +64,12 @@ func IsoTime() string {
 // eg: 1521221737376
 func GetNowMillisecond() int64 {
 	return time.Now().UnixNano() / 1000000
+}
+
+// GetNowMillisecond Get current mill second timestamp
+// eg: 1521221737376
+func GetNowMillisecondStr() string {
+	return strconv.FormatInt(time.Now().UnixNano()/1000000, 10)
 }
 
 // getNowTimestamp Get current second timestamp

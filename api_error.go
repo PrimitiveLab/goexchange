@@ -1,5 +1,7 @@
 package goexchange
 
+import "time"
+
 type ApiStatusCode struct {
 	Code int
 	Msg  string
@@ -28,3 +30,16 @@ var (
 	// HTTP_ERROR_404            	= ApiError{Code: "404", Msg: "http request 404 error"}
 	// HTTP_ERROR_502            	= ApiError{Code: "502", Msg: "http request 502 error"}
 )
+
+// ReturnAPIError return error
+func ReturnAPIError(code ApiStatusCode) interface{} {
+	startTime := time.Now().UnixNano() / 1e6
+	retData := map[string]interface{}{
+		"code":  code.Code,
+		"st":    startTime,
+		"et":    startTime,
+		"msg":   code.Msg,
+		"error": code.Msg,
+		"data":  nil}
+	return retData
+}

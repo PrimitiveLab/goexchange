@@ -12,41 +12,48 @@ import (
 	. "github.com/primitivelab/goexchange"
 )
 
-var klinePeriod = map[int]string {
-	KLINE_PERIOD_1MINUTE:   "1m",
-	KLINE_PERIOD_5MINUTE:   "5m",
-	KLINE_PERIOD_15MINUTE:  "15m",
-	KLINE_PERIOD_30MINUTE:  "30m",
-	KLINE_PERIOD_60MINUTE:  "1h",
-	KLINE_PERIOD_1HOUR:  	"1h",
-	KLINE_PERIOD_4HOUR:  	"4h",
-	KLINE_PERIOD_8HOUR:  	"8h",
-	KLINE_PERIOD_1DAY:   	"1d",
-	KLINE_PERIOD_7DAY:   	"7d",
+var klinePeriod = map[int]string{
+	KLINE_PERIOD_1MINUTE:  "1m",
+	KLINE_PERIOD_5MINUTE:  "5m",
+	KLINE_PERIOD_15MINUTE: "15m",
+	KLINE_PERIOD_30MINUTE: "30m",
+	KLINE_PERIOD_60MINUTE: "1h",
+	KLINE_PERIOD_1HOUR:    "1h",
+	KLINE_PERIOD_4HOUR:    "4h",
+	KLINE_PERIOD_8HOUR:    "8h",
+	KLINE_PERIOD_1DAY:     "1d",
+	KLINE_PERIOD_7DAY:     "7d",
 }
 
+// GateSpot gate exchange spot
 type GateSpot struct {
 	httpClient *http.Client
-	baseUrl string
-	accessKey string
-	secretKey string
+	baseURL    string
+	accessKey  string
+	secretKey  string
 }
 
-func New(client *http.Client, apiKey, secretKey string) *GateSpot {
+// New new instance
+func New(client *http.Client, baseURL, apiKey, secretKey string) *GateSpot {
 	instance := new(GateSpot)
-	instance.baseUrl = "https://api.gateio.ws"
+	if baseURL == "" {
+		instance.baseURL = "https://api.gateio.ws"
+	} else {
+		instance.baseURL = baseURL
+	}
 	instance.httpClient = client
 	instance.accessKey = apiKey
 	instance.secretKey = secretKey
 	return instance
 }
 
+// NewWithConfig new instance by config
 func NewWithConfig(config *APIConfig) *GateSpot {
 	instance := new(GateSpot)
 	if config.Endpoint == "" {
-		instance.baseUrl = "https://api.gateio.ws"
+		instance.baseURL = "https://api.gateio.ws"
 	} else {
-		instance.baseUrl = config.Endpoint
+		instance.baseURL = config.Endpoint
 	}
 	instance.httpClient = config.HttpClient
 	instance.accessKey = config.ApiKey
@@ -54,31 +61,25 @@ func NewWithConfig(config *APIConfig) *GateSpot {
 	return instance
 }
 
-func (gateSpot *GateSpot) GetExchangeName() string {
+// GetExchangeName return exchange name
+func (spot *GateSpot) GetExchangeName() string {
 	return ECHANGE_GATE
 }
 
-func (gateSpot *GateSpot) GetCoinList() interface{} {
+// GetCoinList exchange supported coins
+func (spot *GateSpot) GetCoinList() interface{} {
 	params := &url.Values{}
-	result := gateSpot.httpRequest("/api2/1/coininfo", "get", params, false)
-	if result["code"] != 0 {
-		return result
-	}
-
-	return result
+	return spot.httpRequest("/api2/1/coininfo", "get", params, false)
 }
 
-func (gateSpot *GateSpot) GetSymbolList() interface{} {
-
+// GetSymbolList exchange all symbol
+func (spot *GateSpot) GetSymbolList() interface{} {
 	params := &url.Values{}
-	result := gateSpot.httpRequest(gateSpot.getUrl("currency_pairs"),"get", params, false)
-	if result["code"] != 0 {
-		return result
-	}
-	return result
+	return spot.httpRequest(spot.getUrl("currency_pairs"), "get", params, false)
 }
 
-func (gateSpot *GateSpot) GetDepth(symbol Symbol, size int, options map[string]string) map[string]interface{} {
+// GetDepth symbol depth
+func (spot *GateSpot) GetDepth(symbol Symbol, size int, options map[string]string) map[string]interface{} {
 	params := &url.Values{}
 	params.Set("currency_pair", symbol.ToUpper().ToSymbol("_"))
 	if size != 0 {
@@ -87,24 +88,26 @@ func (gateSpot *GateSpot) GetDepth(symbol Symbol, size int, options map[string]s
 	if depthType, ok := options["depth"]; ok == true {
 		params.Set("interval", depthType)
 	}
-	result := gateSpot.httpRequest(gateSpot.getUrl("order_book"), "get", params, false)
+	result := spot.httpRequest(spot.getUrl("order_book"), "get", params, false)
 	if result["code"] != 0 {
 		return result
 	}
 	return result
 }
 
-func (gateSpot *GateSpot) GetTicker(symbol Symbol) interface{} {
+// GetTicker symbol ticker
+func (spot *GateSpot) GetTicker(symbol Symbol) interface{} {
 	params := &url.Values{}
 	params.Set("currency_pair", symbol.ToUpper().ToSymbol("_"))
-	result := gateSpot.httpRequest(gateSpot.getUrl("tickers"), "get", params, false)
+	result := spot.httpRequest(spot.getUrl("tickers"), "get", params, false)
 	if result["code"] != 0 {
 		return result
 	}
 	return result
 }
 
-func (gateSpot *GateSpot) GetKline(symbol Symbol, period, size int, options map[string]string) interface{} {
+// GetKline symbol kline
+func (spot *GateSpot) GetKline(symbol Symbol, period, size int, options map[string]string) interface{} {
 	params := &url.Values{}
 	params.Set("currency_pair", symbol.ToUpper().ToSymbol("_"))
 	periodStr, ok := klinePeriod[period]
@@ -122,14 +125,15 @@ func (gateSpot *GateSpot) GetKline(symbol Symbol, period, size int, options map[
 		params.Set("to", endTime)
 	}
 
-	result := gateSpot.httpRequest(gateSpot.getUrl("candlesticks"), "get", params,false)
+	result := spot.httpRequest(spot.getUrl("candlesticks"), "get", params, false)
 	if result["code"] != 0 {
 		return result
 	}
 	return result
 }
 
-func (gateSpot *GateSpot) GetTrade(symbol Symbol, size int, options map[string]string) interface{} {
+// GetTrade symbol last trade
+func (spot *GateSpot) GetTrade(symbol Symbol, size int, options map[string]string) interface{} {
 	params := &url.Values{}
 	params.Set("currency_pair", symbol.ToUpper().ToSymbol("_"))
 	if size != 0 {
@@ -138,7 +142,7 @@ func (gateSpot *GateSpot) GetTrade(symbol Symbol, size int, options map[string]s
 	if lastId, ok := options["lastId"]; ok == true {
 		params.Set("last_id", lastId)
 	}
-	result := gateSpot.httpRequest(gateSpot.getUrl("trades"), "get", params, false)
+	result := spot.httpRequest(spot.getUrl("trades"), "get", params, false)
 	if result["code"] != 0 {
 		return result
 	}
@@ -146,76 +150,109 @@ func (gateSpot *GateSpot) GetTrade(symbol Symbol, size int, options map[string]s
 	return result
 }
 
-// 获取余额
+// GetUserBalance user balance
 func (spot *GateSpot) GetUserBalance() interface{} {
-	return nil
+	params := &url.Values{}
+	return spot.httpRequest(spot.getUrl("accounts"), "get", params, true)
 }
 
-// 批量下单
+// PlaceOrder place order
 func (spot *GateSpot) PlaceOrder(order *PlaceOrder) interface{} {
 	return nil
 }
 
-// 下限价单
+// PlaceLimitOrder place limit order
 func (spot *GateSpot) PlaceLimitOrder(symbol Symbol, price string, amount string, side TradeSide, ClientOrderId string) interface{} {
 	return nil
 }
 
-// 下市价单
+// PlaceMarketOrder place market order
 func (spot *GateSpot) PlaceMarketOrder(symbol Symbol, amount string, side TradeSide, ClientOrderId string) interface{} {
 	return nil
 }
 
-// 批量下限价单
+// BatchPlaceLimitOrder batch place limit order
 func (spot *GateSpot) BatchPlaceLimitOrder(orders []LimitOrder) interface{} {
 	return nil
 }
 
-// 撤单
+// CancelOrder cancel a order
 func (spot *GateSpot) CancelOrder(symbol Symbol, orderId, clientOrderId string) interface{} {
 	return nil
 }
 
-// 批量撤单
+// BatchCancelOrder batch cancel orders
 func (spot *GateSpot) BatchCancelOrder(symbol Symbol, orderIds, clientOrderIds string) interface{} {
 	return nil
 }
 
-// 我的当前委托单
+// GetUserOpenTrustOrders get current trust order
 func (spot *GateSpot) GetUserOpenTrustOrders(symbol Symbol, size int, options map[string]string) interface{} {
 	return nil
 }
 
-// 委托单详情
+// GetUserOrderInfo get trust order info
 func (spot *GateSpot) GetUserOrderInfo(symbol Symbol, orderId, clientOrderId string) interface{} {
 	return nil
 }
 
-// 我的成交单列表
+// GetUserTradeOrders get trade order list
 func (spot *GateSpot) GetUserTradeOrders(symbol Symbol, size int, options map[string]string) interface{} {
 	return nil
 }
 
-// 我的委托单列表
+// GetUserTrustOrders get trust order list
 func (spot *GateSpot) GetUserTrustOrders(symbol Symbol, status string, size int, options map[string]string) interface{} {
 	return nil
 }
 
-func (gateSpot *GateSpot) HttpRequest(requestUrl, method string, options interface{}, signed bool) interface{} {
+func (spot *GateSpot) HttpRequest(requestUrl, method string, options interface{}, signed bool) interface{} {
 	return nil
 }
 
-func (gateSpot *GateSpot) httpRequest(url , method string, params *url.Values, signed bool) map[string]interface{} {
+func (spot *GateSpot) httpGet(url string, params *url.Values, signed bool) map[string]interface{} {
+	var responseMap HttpClientResponse
+	headers := map[string]string{
+		"Content-Type": "application/json",
+	}
+
+	if signed {
+		timestamp := GetNowTimestampStr()
+		headers["KEY"] = spot.accessKey
+		headers["SIGN"] = spot.sign("", "", "", "")
+		headers["Timestamp"] = timestamp
+	}
+
+	requestURL := spot.baseURL + url + "?" + params.Encode()
+	responseMap = HttpGetWithHeader(spot.httpClient, requestURL, headers)
+	fmt.Println(requestURL)
+	return spot.handlerResponse(&responseMap)
+}
+
+func (spot *GateSpot) httpPost(url string, params *url.Values, signed bool) map[string]interface{} {
+	var responseMap HttpClientResponse
+	requestURL := spot.baseURL + url
+	if signed {
+		spot.sign("", "", "", "")
+	}
+
+	responseMap = HttpPost(spot.httpClient, requestURL, params.Encode())
+
+	fmt.Println(requestURL)
+	return spot.handlerResponse(&responseMap)
+}
+
+func (spot *GateSpot) httpRequest(url, method string, params *url.Values, signed bool) map[string]interface{} {
 	method = strings.ToUpper(method)
 
 	var responseMap HttpClientResponse
 	switch method {
 	case "GET":
-		requestUrl := gateSpot.baseUrl + url + "?" + params.Encode()
+		requestUrl := spot.baseURL + url + "?" + params.Encode()
 		fmt.Println(requestUrl)
-		responseMap = HttpGet(gateSpot.httpClient, requestUrl)
-	// case "POST":
-	// 	return nil
+		responseMap = HttpGet(spot.httpClient, requestUrl)
+		// case "POST":
+		// 	return nil
 	}
 
 	var returnData map[string]interface{}
@@ -244,6 +281,50 @@ func (gateSpot *GateSpot) httpRequest(url , method string, params *url.Values, s
 	return returnData
 }
 
-func (gateSpot *GateSpot) getUrl(url string) string  {
+func (spot *GateSpot) handlerResponse(responseMap *HttpClientResponse) map[string]interface{} {
+	var returnData map[string]interface{}
+	returnData = make(map[string]interface{})
+
+	returnData["code"] = responseMap.Code
+	returnData["st"] = responseMap.St
+	returnData["et"] = responseMap.Et
+
+	if responseMap.Code != 0 {
+		returnData["msg"] = responseMap.Msg
+		returnData["error"] = responseMap.Error
+		return returnData
+	}
+
+	var bodyData map[string]interface{}
+
+	err := json.Unmarshal(responseMap.Data, &bodyData)
+	fmt.Println(bodyData)
+	if err != nil {
+		returnData["code"] = JsonUnmarshalError.Code
+		returnData["msg"] = JsonUnmarshalError.Msg
+		returnData["error"] = err.Error()
+		return returnData
+	}
+	if bodyData["code"].(string) != "0" {
+		returnData["code"] = ExchangeError.Code
+		returnData["msg"] = ExchangeError.Msg
+		returnData["error"] = fmt.Sprintf("code: %v, msg: %v", bodyData["code"], bodyData["msg"])
+		return returnData
+	}
+	returnData["data"] = bodyData["data"]
+	return returnData
+}
+
+func (spot *GateSpot) sign(url, method, timestamp, reqData string) string {
+	signStr := timestamp + method + url + reqData
+	sign, _ := HmacSha256Base64Signer(signStr, spot.secretKey)
+	return sign
+}
+
+func (spot GateSpot) getSymbol(symbol Symbol) string {
+	return symbol.ToUpper().ToSymbol("_")
+}
+
+func (spot *GateSpot) getUrl(url string) string {
 	return "/api/v4/spot/" + url
 }

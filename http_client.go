@@ -78,6 +78,11 @@ func HttpPost(client *http.Client, reqUrl string, postData string) HttpClientRes
 	return NewHttpRequest(client, "POST", reqUrl, postData, headers)
 }
 
+func HttpPostWithHeader(client *http.Client, reqUrl string, postData string, headers map[string]string) HttpClientResponse {
+	headers["Content-Type"] = "application/x-www-form-urlencoded"
+	return NewHttpRequest(client, "POST", reqUrl, postData, headers)
+}
+
 func HttpPostWithJson(client *http.Client, reqUrl string, postData string, headers map[string]string) HttpClientResponse {
 	headers["Content-Type"] = "application/json; charset=UTF-8"
 	return NewHttpRequest(client, "POST", reqUrl, postData, headers)
