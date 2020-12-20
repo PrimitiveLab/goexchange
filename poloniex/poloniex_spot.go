@@ -266,7 +266,7 @@ func (spot *PoloniexSpot) GetUserTrustOrders(symbol Symbol, status string, size 
 }
 
 // HttpRequest request api
-func (spot *PoloniexSpot) HttpRequest(requestUrl, method string, options interface{}) interface{} {
+func (spot *PoloniexSpot) HttpRequest(requestUrl, method string, options interface{}, signed bool) interface{} {
 	method = strings.ToUpper(method)
 	params := &url.Values{}
 	mapOptions := options.(map[string]string)

@@ -9,6 +9,7 @@ import (
 	"time"
 
 	. "github.com/primitivelab/goexchange"
+	"github.com/primitivelab/goexchange/biki"
 	"github.com/primitivelab/goexchange/binance"
 	"github.com/primitivelab/goexchange/bitz"
 	"github.com/primitivelab/goexchange/gate"
@@ -16,6 +17,7 @@ import (
 	"github.com/primitivelab/goexchange/huobi"
 	"github.com/primitivelab/goexchange/mxc"
 	"github.com/primitivelab/goexchange/okex"
+	"github.com/primitivelab/goexchange/poloniex"
 )
 
 type APIBuilder struct {
@@ -190,6 +192,10 @@ func (builder *APIBuilder) Build(exName string) (api SpotAPI) {
 		api = mxc.NewWithConfig(&config)
 	case ECHANGE_HOO:
 		api = hoo.NewWithConfig(&config)
+	case ECHANGE_BIKI:
+		api = biki.NewWithConfig(&config)
+	case ECHANGE_POLONIEX:
+		api = poloniex.NewWithConfig(&config)
 	default:
 		println("exchange name error [" + exName + "].")
 	}
