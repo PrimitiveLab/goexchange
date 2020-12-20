@@ -354,7 +354,6 @@ func (spot *BikiSpot) handlerResponse(responseMap *HttpClientResponse) map[strin
 	var bodyData map[string]interface{}
 
 	err := json.Unmarshal(responseMap.Data, &bodyData)
-	fmt.Println(bodyData)
 	if err != nil {
 		returnData["code"] = JsonUnmarshalError.Code
 		returnData["msg"] = JsonUnmarshalError.Msg
