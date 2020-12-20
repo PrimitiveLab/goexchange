@@ -32,7 +32,6 @@ func getInstance() *GateSpot {
 			baseURL = config["url"].(string)
 		}
 	}
-
 	market := New(client, baseURL, apiKey, secretKey)
 	return market
 }
@@ -181,11 +180,3 @@ func TestGateSpot_BatchCancelOrder(t *testing.T) {
 	b, _ := json.Marshal(response)
 	t.Log(string(b))
 }
-
-// func TestGateSpot_BatchCancelAllOrder(t *testing.T) {
-// 	market := getInstance()
-
-// 	response := market.BatchCancelAllOrder(NewSymbol("eos", "usdt"))
-// 	b, _ := json.Marshal(response)
-// 	t.Log(string(b))
-// }

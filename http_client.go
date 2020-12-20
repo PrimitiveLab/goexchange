@@ -92,6 +92,11 @@ func HttpDelete(client *http.Client, reqUrl string) HttpClientResponse {
 	return NewHttpRequest(client, "DELETE", reqUrl, "", nil)
 }
 
+func HttpDeleteWithHeader(client *http.Client, reqUrl string, headers map[string]string) HttpClientResponse {
+	headers["Content-Type"] = "application/json; charset=UTF-8"
+	return NewHttpRequest(client, "DELETE", reqUrl, "", headers)
+}
+
 //
 // func HttpPostWithFormUrlEncoded(client *http.Client, reqUrl string, postData url.Values) ([]byte, [2]int64,error) {
 // 	headers := map[string]string{

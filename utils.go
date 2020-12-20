@@ -47,8 +47,14 @@ func HmacSha512Signer(message string, secretKey string) (string, error) {
 
 // md5 sign
 func Md5Signer(message string) string {
-	has := md5.Sum([]byte(message))
-	return fmt.Sprintf("%x", has)
+	hash := md5.Sum([]byte(message))
+	return fmt.Sprintf("%x", hash)
+}
+
+// Sha512Signer sign
+func Sha512Signer(message string) string {
+	hash := sha512.Sum512([]byte(message))
+	return fmt.Sprintf("%x", hash)
 }
 
 // Get a iso time eg: 2018-03-16T18:02:48.284Z
