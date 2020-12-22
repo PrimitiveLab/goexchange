@@ -61,7 +61,7 @@ func NewWithConfig(config *APIConfig) *HuobiSpot {
 }
 
 func (hb *HuobiSpot) GetExchangeName() string {
-	return ECHANGE_HUOBI
+	return EXCHANGE_HUOBI
 }
 
 func (hb *HuobiSpot) GetCoinList() interface{} {

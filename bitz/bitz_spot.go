@@ -70,7 +70,7 @@ func NewWithConfig(config *APIConfig) *BitzSpot {
 }
 
 func (spot *BitzSpot) GetExchangeName() string {
-	return ECHANGE_BITZ
+	return EXCHANGE_BITZ
 }
 
 func (spot *BitzSpot) GetCoinList() interface{} {

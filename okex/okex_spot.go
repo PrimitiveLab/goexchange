@@ -66,7 +66,7 @@ func NewWithConfig(config *APIConfig) *OkexSpot {
 
 // 交易所名称
 func (spot *OkexSpot) GetExchangeName() string {
-	return ECHANGE_OKEX
+	return EXCHANGE_OKEX
 }
 
 // 币种列表

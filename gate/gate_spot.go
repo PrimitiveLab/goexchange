@@ -67,7 +67,7 @@ func NewWithConfig(config *APIConfig) *GateSpot {
 
 // GetExchangeName return exchange name
 func (spot *GateSpot) GetExchangeName() string {
-	return ECHANGE_GATE
+	return EXCHANGE_GATE
 }
 
 // GetCoinList exchange supported coins

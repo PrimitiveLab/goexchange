@@ -64,7 +64,7 @@ func NewWithConfig(config *APIConfig) *MxcSpot {
 }
 
 func (spot *MxcSpot) GetExchangeName() string {
-	return ECHANGE_MCX
+	return EXCHANGE_MCX
 }
 
 func (spot *MxcSpot) GetCoinList() interface{} {

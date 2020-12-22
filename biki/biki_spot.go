@@ -68,7 +68,7 @@ func NewWithConfig(config *APIConfig) *BikiSpot {
 
 // GetExchangeName return exchange name
 func (spot *BikiSpot) GetExchangeName() string {
-	return ECHANGE_BIKI
+	return EXCHANGE_BIKI
 }
 
 // GetCoinList exchange supported coins

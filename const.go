@@ -65,14 +65,14 @@ const (
 
 // exchange name const
 const (
-	ECHANGE_OKEX     = "okex"
-	ECHANGE_HUOBI    = "huobi"
-	ECHANGE_BINANCE  = "binance"
-	ECHANGE_GATE     = "gate"
-	ECHANGE_KUCOIN   = "kucoin"
-	ECHANGE_BITZ     = "bitz"
-	ECHANGE_MCX      = "mxc"
-	ECHANGE_HOO      = "hoo"
-	ECHANGE_POLONIEX = "poloniex"
-	ECHANGE_BIKI     = "biki"
+	EXCHANGE_OKEX     = "okex"
+	EXCHANGE_HUOBI    = "huobi"
+	EXCHANGE_BINANCE  = "binance"
+	EXCHANGE_GATE     = "gate"
+	EXCHANGE_KUCOIN   = "kucoin"
+	EXCHANGE_BITZ     = "bitz"
+	EXCHANGE_MCX      = "mxc"
+	EXCHANGE_HOO      = "hoo"
+	EXCHANGE_POLONIEX = "poloniex"
+	EXCHANGE_BIKI     = "biki"
 )

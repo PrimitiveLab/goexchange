@@ -178,23 +178,23 @@ func (builder *APIBuilder) Build(exName string) (api SpotAPI) {
 	config.AccountId = builder.accountId
 
 	switch exName {
-	case ECHANGE_BINANCE:
+	case EXCHANGE_BINANCE:
 		api = binance.NewWithConfig(&config)
-	case ECHANGE_HUOBI:
+	case EXCHANGE_HUOBI:
 		api = huobi.NewWithConfig(&config)
-	case ECHANGE_OKEX:
+	case EXCHANGE_OKEX:
 		api = okex.NewWithConfig(&config)
-	case ECHANGE_GATE:
+	case EXCHANGE_GATE:
 		api = gate.NewWithConfig(&config)
-	case ECHANGE_BITZ:
+	case EXCHANGE_BITZ:
 		api = bitz.NewWithConfig(&config)
-	case ECHANGE_MCX:
+	case EXCHANGE_MCX:
 		api = mxc.NewWithConfig(&config)
-	case ECHANGE_HOO:
+	case EXCHANGE_HOO:
 		api = hoo.NewWithConfig(&config)
-	case ECHANGE_BIKI:
+	case EXCHANGE_BIKI:
 		api = biki.NewWithConfig(&config)
-	case ECHANGE_POLONIEX:
+	case EXCHANGE_POLONIEX:
 		api = poloniex.NewWithConfig(&config)
 	default:
 		println("exchange name error [" + exName + "].")

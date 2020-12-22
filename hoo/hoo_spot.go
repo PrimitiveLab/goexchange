@@ -62,7 +62,7 @@ func NewWithConfig(config *APIConfig) *HooSpot {
 }
 
 func (spot *HooSpot) GetExchangeName() string {
-	return ECHANGE_HOO
+	return EXCHANGE_HOO
 }
 
 func (spot *HooSpot) GetCoinList() interface{} {

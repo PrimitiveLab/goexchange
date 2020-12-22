@@ -60,7 +60,7 @@ func NewWithConfig(config *APIConfig) *BinanceSpot {
 }
 
 func (binanceSpot *BinanceSpot) GetExchangeName() string {
-	return ECHANGE_BINANCE
+	return EXCHANGE_BINANCE
 }
 
 func (binanceSpot *BinanceSpot) GetCoinList() interface{} {

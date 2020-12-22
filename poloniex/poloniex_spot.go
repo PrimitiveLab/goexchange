@@ -64,7 +64,7 @@ func NewWithConfig(config *APIConfig) *PoloniexSpot {
 
 // GetExchangeName return exchange name
 func (spot *PoloniexSpot) GetExchangeName() string {
-	return ECHANGE_POLONIEX
+	return EXCHANGE_POLONIEX
 }
 
 // GetCoinList exchange supported coins
