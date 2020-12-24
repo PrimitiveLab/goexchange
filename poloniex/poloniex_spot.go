@@ -187,12 +187,12 @@ func (spot *PoloniexSpot) PlaceLimitOrder(symbol Symbol, price string, amount st
 
 // PlaceMarketOrder place market order
 func (spot *PoloniexSpot) PlaceMarketOrder(symbol Symbol, amount string, side TradeSide, ClientOrderID string) interface{} {
-	return nil
+	return ReturnAPIError(MethodNotExistError)
 }
 
 // BatchPlaceLimitOrder batch place limit order
 func (spot *PoloniexSpot) BatchPlaceLimitOrder(orders []LimitOrder) interface{} {
-	return nil
+	return ReturnAPIError(MethodNotExistError)
 }
 
 // CancelOrder cancel a order
@@ -211,7 +211,7 @@ func (spot *PoloniexSpot) CancelOrder(symbol Symbol, orderID, clientOrderID stri
 
 // BatchCancelOrder batch cancel orders
 func (spot *PoloniexSpot) BatchCancelOrder(symbol Symbol, orderIds, clientOrderIds string) interface{} {
-	return nil
+	return ReturnAPIError(MethodNotExistError)
 }
 
 // GetUserOpenTrustOrders get current trust order
@@ -262,7 +262,7 @@ func (spot *PoloniexSpot) GetUserTradeOrders(symbol Symbol, size int, options ma
 
 // GetUserTrustOrders get trust order list
 func (spot *PoloniexSpot) GetUserTrustOrders(symbol Symbol, status string, size int, options map[string]string) interface{} {
-	return nil
+	return ReturnAPIError(MethodNotExistError)
 }
 
 // HttpRequest request api
