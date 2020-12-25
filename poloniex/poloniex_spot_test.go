@@ -137,7 +137,7 @@ func TestPoloniexSpot_GetUserTradeOrders(t *testing.T) {
 func TestPoloniexSpot_PlaceLimitOrder(t *testing.T) {
 	market := getInstance()
 
-	response := market.PlaceLimitOrder(NewSymbol("eos", "usdt"), "1", "10", BUY, "")
+	response := market.PlaceLimitOrder(NewSymbol("eos", "usdt"), "1", "1", BUY, "")
 	b, _ := json.Marshal(response)
 	t.Log(string(b))
 }

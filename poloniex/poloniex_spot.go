@@ -295,16 +295,16 @@ func (spot *PoloniexSpot) httpGet(url string, params *url.Values) map[string]int
 func (spot *PoloniexSpot) httpPost(url string, params *url.Values) map[string]interface{} {
 	var responseMap HttpClientResponse
 
-	requestUrl := spot.baseUrl + url
-	params.Set("nonce", GetNowMillisecondStr())
+	requestURL := spot.baseUrl + url
+	params.Set("nonce", GetNowMicrosecondStr())
 	sign, _ := HmacSha512Signer(params.Encode(), spot.secretKey)
 	headers := map[string]string{
 		"Key":  spot.accessKey,
 		"Sign": sign,
 	}
 
-	responseMap = HttpPostWithHeader(spot.httpClient, requestUrl, params.Encode(), headers)
-	fmt.Println(requestUrl)
+	responseMap = HttpPostWithHeader(spot.httpClient, requestURL, params.Encode(), headers)
+	fmt.Println(requestURL)
 	return spot.handlerResponse(&responseMap)
 }
 

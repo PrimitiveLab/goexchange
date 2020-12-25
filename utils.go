@@ -78,6 +78,12 @@ func GetNowMillisecondStr() string {
 	return strconv.FormatInt(time.Now().UnixNano()/1000000, 10)
 }
 
+// GetNowMicrosecondStr Get current mill second timestamp
+// eg: 1521221737376000
+func GetNowMicrosecondStr() string {
+	return strconv.FormatInt(time.Now().UnixNano()/1000, 10)
+}
+
 // getNowTimestamp Get current second timestamp
 // eg: 1521221737
 func GetNowTimestamp() int64 {
