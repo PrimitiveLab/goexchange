@@ -179,7 +179,7 @@ func (spot *GateSpot) PlaceOrder(order *PlaceOrder) interface{} {
 		params.Set("time_in_force", "poc")
 	}
 	if order.ClientOrderId != "" {
-		params.Set("text", "t-"+order.ClientOrderId)
+		params.Set("text", order.ClientOrderId)
 	}
 
 	result := spot.httpPost(spot.getURL("orders"), params, false)
@@ -196,7 +196,7 @@ func (spot *GateSpot) PlaceLimitOrder(symbol Symbol, price string, amount string
 	params.Set("account", "spot")
 	params.Set("side", side.String())
 	if ClientOrderID != "" {
-		params.Set("text", "t-"+ClientOrderID)
+		params.Set("text", ClientOrderID)
 	}
 	return spot.httpPost(spot.getURL("orders"), params, true)
 }
@@ -218,7 +218,7 @@ func (spot *GateSpot) BatchPlaceLimitOrder(orders []LimitOrder) interface{} {
 		param["type"] = LIMIT
 		param["account"] = "spot"
 		if item.ClientOrderId != "" {
-			param["text"] = "t-" + item.ClientOrderId
+			param["text"] = item.ClientOrderId
 		} else {
 			param["text"] = "t-" + GetNowMillisecondStr() + strconv.FormatInt(int64(index), 10)
 		}
@@ -275,7 +275,7 @@ func (spot *GateSpot) GetUserOpenTrustOrders(symbol Symbol, size int, options ma
 	if page, ok := options["page"]; ok == true {
 		params.Set("page", page)
 	}
-	result := spot.httpGet(spot.getURL("open_orders"), params, true)
+	result := spot.httpGet(spot.getURL("orders"), params, true)
 	return result
 }
 
