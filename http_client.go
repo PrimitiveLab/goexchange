@@ -1,123 +1,104 @@
 package goexchange
 
 import (
-	"strings"
-
-	// "errors"
+	"context"
 	"fmt"
-	"io/ioutil"
+	"net"
 	"net/http"
+	"net/url"
 	"time"
 )
 
-// 请求类型
-const (
-	HTTP_GET    string = "GET"
-	HTTP_POST   string = "POST"
-	HTTP_DELETE string = "DELETE"
+// HTTPClientConfig http client config
+type HTTPClientConfig struct {
+	HTTPTimeout  time.Duration
+	Proxy        *url.URL
+	MaxIdleConns int
+}
+
+// String return string's config
+func (c HTTPClientConfig) String() string {
+	return fmt.Sprintf("{ProxyUrl:\"%s\",HttpTimeout:%s,MaxIdleConns:%d}", c.Proxy, c.HTTPTimeout.String(), c.MaxIdleConns)
+}
+
+// SetHTTPTimeout set client timeout
+func (c *HTTPClientConfig) SetHTTPTimeout(timeout time.Duration) *HTTPClientConfig {
+	c.HTTPTimeout = timeout
+	return c
+}
+
+// SetProxyURL set client proxy
+func (c *HTTPClientConfig) SetProxyURL(proxyURL string) *HTTPClientConfig {
+	if proxyURL == "" {
+		return c
+	}
+	proxy, err := url.Parse(proxyURL)
+	if err != nil {
+		return c
+	}
+	c.Proxy = proxy
+	return c
+}
+
+// SetMaxIdleConns set client max idle connect number
+func (c *HTTPClientConfig) SetMaxIdleConns(max int) *HTTPClientConfig {
+	c.MaxIdleConns = max
+	return c
+}
+
+var (
+	// DefaultHTTPClientConfig default config
+	DefaultHTTPClientConfig = &HTTPClientConfig{
+		Proxy:        nil,
+		HTTPTimeout:  5 * time.Second,
+		MaxIdleConns: 10,
+	}
 )
 
-func NewHttpRequest(client *http.Client, method string, reqUrl string, postData string, headers map[string]string) HttpClientResponse {
-	// logger.Log.Debugf("[%s] request url: %s", method, reqUrl)
-
-	startTime := time.Now().UnixNano() / 1e6
-	req, _ := http.NewRequest(method, reqUrl, strings.NewReader(postData))
-	if req.Header.Get("User-Agent") == "" {
-		req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.63 Safari/537.36")
+// NewHTTPClient new http client instance
+func NewHTTPClient() (client *http.Client) {
+	client = &http.Client{
+		Timeout: DefaultHTTPClientConfig.HTTPTimeout,
+		Transport: &http.Transport{
+			Proxy: func(request *http.Request) (*url.URL, error) {
+				return DefaultHTTPClientConfig.Proxy, nil
+			},
+			MaxIdleConns:          DefaultHTTPClientConfig.MaxIdleConns,
+			IdleConnTimeout:       5 * DefaultHTTPClientConfig.HTTPTimeout,
+			MaxConnsPerHost:       2,
+			MaxIdleConnsPerHost:   2,
+			TLSHandshakeTimeout:   DefaultHTTPClientConfig.HTTPTimeout,
+			ResponseHeaderTimeout: DefaultHTTPClientConfig.HTTPTimeout,
+			ExpectContinueTimeout: DefaultHTTPClientConfig.HTTPTimeout,
+			DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+				return net.DialTimeout(network, addr, DefaultHTTPClientConfig.HTTPTimeout)
+			}},
 	}
-	if headers != nil {
-		for k, v := range headers {
-			req.Header.Add(k, v)
-		}
-	}
+	return
+}
 
-	resp, err := client.Do(req)
-	endTime := time.Now().UnixNano() / 1e6
-	var returnData HttpClientResponse
-	returnData.St = startTime
-	returnData.Et = endTime
-	if err != nil {
-		returnData.Code = HttpClientInternalError.Code
-		returnData.Msg = HttpClientInternalError.Msg
-		returnData.Error = err.Error()
-		return returnData
-	}
-
-	defer resp.Body.Close()
-
-	bodyData, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		returnData.Code = HttpClientInternalError.Code
-		returnData.Msg = HttpClientInternalError.Msg
-		returnData.Error = err.Error()
-		return returnData
+// NewHTTPClientWithConfig new http client instance with config
+func NewHTTPClientWithConfig(config *HTTPClientConfig) (client *http.Client) {
+	if config == nil {
+		config = DefaultHTTPClientConfig
 	}
 
-	if resp.StatusCode != 200 {
-		returnData.Code = resp.StatusCode
-		returnData.Msg = HttpRequestError.Msg
-		returnData.Error = fmt.Sprintf("HttpStatusCode:%d ,Desc:%s", resp.StatusCode, string(bodyData))
-		return returnData
+	client = &http.Client{
+		Timeout: config.HTTPTimeout,
+		Transport: &http.Transport{
+			Proxy: func(request *http.Request) (*url.URL, error) {
+				return config.Proxy, nil
+			},
+			MaxIdleConns:          config.MaxIdleConns,
+			IdleConnTimeout:       5 * config.HTTPTimeout,
+			MaxConnsPerHost:       2,
+			MaxIdleConnsPerHost:   2,
+			TLSHandshakeTimeout:   config.HTTPTimeout,
+			ResponseHeaderTimeout: config.HTTPTimeout,
+			ExpectContinueTimeout: config.HTTPTimeout,
+			DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+				return net.DialTimeout(network, addr, config.HTTPTimeout)
+			}},
 	}
-	returnData.Data = bodyData
-	return returnData
+	return
 }
-
-func HttpGet(client *http.Client, reqUrl string) HttpClientResponse {
-	respData := NewHttpRequest(client, "GET", reqUrl, "", map[string]string{})
-	return respData
-}
-
-func HttpGetWithHeader(client *http.Client, reqUrl string, headers map[string]string) HttpClientResponse {
-	respData := NewHttpRequest(client, "GET", reqUrl, "", headers)
-	return respData
-}
-
-func HttpPost(client *http.Client, reqUrl string, postData string) HttpClientResponse {
-	headers := map[string]string{"Content-Type": "application/x-www-form-urlencoded"}
-	return NewHttpRequest(client, "POST", reqUrl, postData, headers)
-}
-
-func HttpPostWithHeader(client *http.Client, reqUrl string, postData string, headers map[string]string) HttpClientResponse {
-	headers["Content-Type"] = "application/x-www-form-urlencoded"
-	return NewHttpRequest(client, "POST", reqUrl, postData, headers)
-}
-
-func HttpPostWithJson(client *http.Client, reqUrl string, postData string, headers map[string]string) HttpClientResponse {
-	headers["Content-Type"] = "application/json; charset=UTF-8"
-	return NewHttpRequest(client, "POST", reqUrl, postData, headers)
-}
-
-func HttpDelete(client *http.Client, reqUrl string) HttpClientResponse {
-	return NewHttpRequest(client, "DELETE", reqUrl, "", nil)
-}
-
-func HttpDeleteWithHeader(client *http.Client, reqUrl string, headers map[string]string) HttpClientResponse {
-	headers["Content-Type"] = "application/json; charset=UTF-8"
-	return NewHttpRequest(client, "DELETE", reqUrl, "", headers)
-}
-
-//
-// func HttpPostWithFormUrlEncoded(client *http.Client, reqUrl string, postData url.Values) ([]byte, [2]int64,error) {
-// 	headers := map[string]string{
-// 		"Content-Type": "application/x-www-form-urlencoded"}
-// 	return NewHttpRequest(client, "POST", reqUrl, postData.Encode(), headers)
-// }
-//
-
-//
-// func HttpDeleteWithForm(client *http.Client, reqUrl string, postData url.Values, headers map[string]string) ([]byte, [2]int64, error) {
-// 	if headers == nil {
-// 		headers = map[string]string{}
-// 	}
-// 	headers["Content-Type"] = "application/x-www-form-urlencoded"
-// 	return NewHttpRequest(client, "DELETE", reqUrl, postData.Encode(), headers)
-// }
-//
-// func HttpPut(client *http.Client, reqUrl string, postData url.Values, headers map[string]string) ([]byte, [2]int64, error) {
-// 	if headers == nil {
-// 		headers = map[string]string{}
-// 	}
-// 	headers["Content-Type"] = "application/x-www-form-urlencoded"
-// 	return NewHttpRequest(client, "PUT", reqUrl, postData.Encode(), headers)
-// }

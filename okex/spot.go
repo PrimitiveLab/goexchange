@@ -2,7 +2,6 @@ package okex
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -11,33 +10,32 @@ import (
 	. "github.com/primitivelab/goexchange"
 )
 
-var klinePeriod = map[int]string {
-	KLINE_PERIOD_1MINUTE:   "60",
-	KLINE_PERIOD_3MINUTE:   "180",
-	KLINE_PERIOD_5MINUTE:   "300",
-	KLINE_PERIOD_15MINUTE:  "900",
-	KLINE_PERIOD_30MINUTE:  "1800",
-	KLINE_PERIOD_60MINUTE:  "3600",
-	KLINE_PERIOD_1HOUR:  	"3600",
-	KLINE_PERIOD_2HOUR:  	"7200",
-	KLINE_PERIOD_4HOUR:  	"14400",
-	KLINE_PERIOD_6HOUR:  	"21600",
-	KLINE_PERIOD_12HOUR:  	"43200",
-	KLINE_PERIOD_1DAY:   	"86400",
-	KLINE_PERIOD_1WEEK:  	"604800",
+var klinePeriod = map[int]string{
+	KLINE_PERIOD_1MINUTE:  "60",
+	KLINE_PERIOD_3MINUTE:  "180",
+	KLINE_PERIOD_5MINUTE:  "300",
+	KLINE_PERIOD_15MINUTE: "900",
+	KLINE_PERIOD_30MINUTE: "1800",
+	KLINE_PERIOD_60MINUTE: "3600",
+	KLINE_PERIOD_1HOUR:    "3600",
+	KLINE_PERIOD_2HOUR:    "7200",
+	KLINE_PERIOD_4HOUR:    "14400",
+	KLINE_PERIOD_6HOUR:    "21600",
+	KLINE_PERIOD_12HOUR:   "43200",
+	KLINE_PERIOD_1DAY:     "86400",
+	KLINE_PERIOD_1WEEK:    "604800",
 }
 
-type OkexSpot struct {
+type Spot struct {
 	httpClient *http.Client
-	baseUrl string
-	accountId string
-	accessKey string
-	secretKey string
+	baseUrl    string
+	accessKey  string
+	secretKey  string
 	passphrase string
 }
 
-func New(client *http.Client, baseUrl string, apiKey, secretKey string, passphrase string) *OkexSpot {
-	instance := new(OkexSpot)
+func New(client *http.Client, baseUrl string, apiKey, secretKey string, passphrase string) *Spot {
+	instance := new(Spot)
 	if baseUrl == "" {
 		instance.baseUrl = "https://www.okex.com"
 	} else {
@@ -50,8 +48,8 @@ func New(client *http.Client, baseUrl string, apiKey, secretKey string, passphra
 	return instance
 }
 
-func NewWithConfig(config *APIConfig) *OkexSpot {
-	instance := new(OkexSpot)
+func NewWithConfig(config *APIConfig) *Spot {
+	instance := new(Spot)
 	if config.Endpoint == "" {
 		instance.baseUrl = "https://www.okex.com"
 	} else {
@@ -65,13 +63,13 @@ func NewWithConfig(config *APIConfig) *OkexSpot {
 }
 
 // 交易所名称
-func (spot *OkexSpot) GetExchangeName() string {
+func (spot *Spot) GetExchangeName() string {
 	return EXCHANGE_OKEX
 }
 
 // 币种列表
-func (spot *OkexSpot) GetCoinList() interface{} {
-	result := spot.httpGet("/api/account/v3/currencies",nil,true)
+func (spot *Spot) GetCoinList() interface{} {
+	result := spot.httpGet("/api/account/v3/currencies", nil, true)
 	if result["code"] != 0 {
 		return result
 	}
@@ -80,7 +78,7 @@ func (spot *OkexSpot) GetCoinList() interface{} {
 }
 
 // 交易对列表
-func (spot *OkexSpot) GetSymbolList() interface{} {
+func (spot *Spot) GetSymbolList() interface{} {
 	result := spot.httpGet("/api/spot/v3/instruments", nil, false)
 	if result["code"] != 0 {
 		return result
@@ -90,15 +88,15 @@ func (spot *OkexSpot) GetSymbolList() interface{} {
 }
 
 // 深度
-func (spot *OkexSpot) GetDepth(symbol Symbol, size int, options map[string]string) map[string]interface{} {
+func (spot *Spot) GetDepth(symbol Symbol, size int, options map[string]string) map[string]interface{} {
 	params := map[string]string{}
 	instrumentId := symbol.ToUpper().ToSymbol("-")
 	params["size"] = strconv.Itoa(size)
-	if depthType, ok := options["depth"]; ok == true {
+	if depthType, ok := options["depth"]; ok {
 		params["depth"] = depthType
 	}
 
-	result := spot.httpGet("/api/spot/v3/instruments/" + instrumentId + "/book", params, false)
+	result := spot.httpGet("/api/spot/v3/instruments/"+instrumentId+"/book", params, false)
 	if result["code"] != 0 {
 		return result
 	}
@@ -106,9 +104,9 @@ func (spot *OkexSpot) GetDepth(symbol Symbol, size int, options map[string]strin
 }
 
 // 牌价
-func (spot *OkexSpot) GetTicker(symbol Symbol) interface{} {
+func (spot *Spot) GetTicker(symbol Symbol) interface{} {
 	instrumentId := symbol.ToUpper().ToSymbol("-")
-	result := spot.httpGet("/api/spot/v3/instruments/" + instrumentId + "/ticker", nil, false)
+	result := spot.httpGet("/api/spot/v3/instruments/"+instrumentId+"/ticker", nil, false)
 	if result["code"] != 0 {
 		return result
 	}
@@ -116,25 +114,25 @@ func (spot *OkexSpot) GetTicker(symbol Symbol) interface{} {
 }
 
 // Kline
-func (spot *OkexSpot) GetKline(symbol Symbol, period, size int, options map[string]string) interface{} {
+func (spot *Spot) GetKline(symbol Symbol, period, size int, options map[string]string) interface{} {
 	params := map[string]string{}
 	instrumentId := symbol.ToUpper().ToSymbol("-")
 	periodStr, ok := klinePeriod[period]
-	if ok != true {
+	if !ok {
 		periodStr = "60"
 	}
 	params["granularity"] = periodStr
 	if size != 0 {
 		params["limit"] = strconv.Itoa(size)
 	}
-	if startTime, ok := options["startTime"]; ok == true {
+	if startTime, ok := options["startTime"]; ok {
 		params["start"] = startTime
 	}
-	if endTime, ok := options["endTime"]; ok == true {
+	if endTime, ok := options["endTime"]; ok {
 		params["end"] = endTime
 	}
 
-	result := spot.httpGet("/api/spot/v3/instruments/" + instrumentId + "/history/candles", params,false)
+	result := spot.httpGet("/api/spot/v3/instruments/"+instrumentId+"/history/candles", params, false)
 	if result["code"] != 0 {
 		return result
 	}
@@ -142,13 +140,13 @@ func (spot *OkexSpot) GetKline(symbol Symbol, period, size int, options map[stri
 }
 
 // 最新成交
-func (spot *OkexSpot) GetTrade(symbol Symbol, size int, options map[string]string) interface{} {
+func (spot *Spot) GetTrade(symbol Symbol, size int, options map[string]string) interface{} {
 	params := map[string]string{}
 	instrumentId := symbol.ToUpper().ToSymbol("-")
 	if size != 0 {
 		params["limit"] = strconv.Itoa(size)
 	}
-	result := spot.httpGet("/api/spot/v3/instruments/" + instrumentId + "/trades", params, false)
+	result := spot.httpGet("/api/spot/v3/instruments/"+instrumentId+"/trades", params, false)
 	if result["code"] != 0 {
 		return result
 	}
@@ -157,7 +155,7 @@ func (spot *OkexSpot) GetTrade(symbol Symbol, size int, options map[string]strin
 }
 
 // 获取余额
-func (spot *OkexSpot) GetUserBalance() interface{} {
+func (spot *Spot) GetUserBalance() interface{} {
 	result := spot.httpGet("/api/spot/v3/accounts", nil, true)
 	if result["code"] != 0 {
 		return result
@@ -166,7 +164,7 @@ func (spot *OkexSpot) GetUserBalance() interface{} {
 }
 
 // 批量下单
-func (spot *OkexSpot) PlaceOrder(order *PlaceOrder) interface{} {
+func (spot *Spot) PlaceOrder(order *PlaceOrder) interface{} {
 
 	params := map[string]interface{}{}
 	params["instrument_id"] = order.Symbol.ToUpper().ToSymbol("-")
@@ -178,7 +176,7 @@ func (spot *OkexSpot) PlaceOrder(order *PlaceOrder) interface{} {
 		params["price"] = order.Price
 		params["amount"] = order.Amount
 		switch order.TimeInForce {
-		case IOC :
+		case IOC:
 			params["order_type"] = 3
 		case FOK:
 			params["order_type"] = 2
@@ -198,7 +196,7 @@ func (spot *OkexSpot) PlaceOrder(order *PlaceOrder) interface{} {
 }
 
 // 下限价单
-func (spot *OkexSpot) PlaceLimitOrder(symbol Symbol, price string, amount string, side TradeSide, ClientOrderId string) interface{} {
+func (spot *Spot) PlaceLimitOrder(symbol Symbol, price string, amount string, side TradeSide, ClientOrderId string) interface{} {
 	params := map[string]interface{}{}
 	params["instrument_id"] = symbol.ToUpper().ToSymbol("-")
 	params["price"] = price
@@ -215,7 +213,7 @@ func (spot *OkexSpot) PlaceLimitOrder(symbol Symbol, price string, amount string
 }
 
 // 下市价单
-func (spot *OkexSpot) PlaceMarketOrder(symbol Symbol, amount string, side TradeSide, ClientOrderId string) interface{} {
+func (spot *Spot) PlaceMarketOrder(symbol Symbol, amount string, side TradeSide, ClientOrderId string) interface{} {
 	params := map[string]interface{}{}
 	params["instrument_id"] = symbol.ToUpper().ToSymbol("-")
 	if side == BUY {
@@ -235,7 +233,7 @@ func (spot *OkexSpot) PlaceMarketOrder(symbol Symbol, amount string, side TradeS
 }
 
 // 批量下限价单
-func (spot *OkexSpot) BatchPlaceLimitOrder(orders []LimitOrder) interface{} {
+func (spot *Spot) BatchPlaceLimitOrder(orders []LimitOrder) interface{} {
 
 	var params []map[string]interface{}
 	for _, item := range orders {
@@ -249,7 +247,7 @@ func (spot *OkexSpot) BatchPlaceLimitOrder(orders []LimitOrder) interface{} {
 			param["client_oid"] = item.ClientOrderId
 		}
 		switch item.TimeInForce {
-		case IOC :
+		case IOC:
 			param["order_type"] = 3
 		case FOK:
 			param["order_type"] = 2
@@ -263,7 +261,7 @@ func (spot *OkexSpot) BatchPlaceLimitOrder(orders []LimitOrder) interface{} {
 }
 
 // 撤单
-func (spot *OkexSpot) CancelOrder(symbol Symbol, orderId, clientOrderId string) interface{} {
+func (spot *Spot) CancelOrder(symbol Symbol, orderId, clientOrderId string) interface{} {
 	params := map[string]string{}
 	instrumentId := symbol.ToUpper().ToSymbol("-")
 	id := orderId
@@ -276,13 +274,13 @@ func (spot *OkexSpot) CancelOrder(symbol Symbol, orderId, clientOrderId string) 
 		params["order_id"] = orderId
 	}
 
-	retData := spot.httpPost("/api/spot/v3/cancel_orders/" + id, params, true)
+	retData := spot.httpPost("/api/spot/v3/cancel_orders/"+id, params, true)
 	spot.handlerError(retData)
 	return retData
 }
 
 // 批量撤单
-func (spot *OkexSpot) BatchCancelOrder(symbol Symbol, orderIds, clientOrderIds string) interface{} {
+func (spot *Spot) BatchCancelOrder(symbol Symbol, orderIds, clientOrderIds string) interface{} {
 	param := map[string]interface{}{}
 	param["instrument_id"] = symbol.ToUpper().ToSymbol("-")
 	if clientOrderIds != "" {
@@ -295,18 +293,18 @@ func (spot *OkexSpot) BatchCancelOrder(symbol Symbol, orderIds, clientOrderIds s
 }
 
 // 我的当前委托单
-func (spot *OkexSpot) GetUserOpenTrustOrders(symbol Symbol, size int, options map[string]string) interface{} {
+func (spot *Spot) GetUserOpenTrustOrders(symbol Symbol, size int, options map[string]string) interface{} {
 	params := map[string]string{}
 	params["instrument_id"] = symbol.ToUpper().ToSymbol("-")
 	if size != 0 {
 		params["limit"] = strconv.Itoa(size)
 	}
 
-	if after, ok := options["after"]; ok == true {
+	if after, ok := options["after"]; ok {
 		params["after"] = after
 	}
 
-	if before, ok := options["before"]; ok == true {
+	if before, ok := options["before"]; ok {
 		params["before"] = before
 	}
 
@@ -318,7 +316,7 @@ func (spot *OkexSpot) GetUserOpenTrustOrders(symbol Symbol, size int, options ma
 }
 
 // 委托单详情
-func (spot *OkexSpot) GetUserOrderInfo(symbol Symbol, orderId, clientOrderId string) interface{} {
+func (spot *Spot) GetUserOrderInfo(symbol Symbol, orderId, clientOrderId string) interface{} {
 	params := map[string]string{}
 	params["instrument_id"] = symbol.ToUpper().ToSymbol("-")
 	id := orderId
@@ -329,7 +327,7 @@ func (spot *OkexSpot) GetUserOrderInfo(symbol Symbol, orderId, clientOrderId str
 		params["order_id"] = orderId
 	}
 
-	result := spot.httpGet("/api/spot/v3/orders/" + id, params, true)
+	result := spot.httpGet("/api/spot/v3/orders/"+id, params, true)
 	if result["code"] != 0 {
 		return result
 	}
@@ -337,22 +335,22 @@ func (spot *OkexSpot) GetUserOrderInfo(symbol Symbol, orderId, clientOrderId str
 }
 
 // 我的成交单列表
-func (spot *OkexSpot) GetUserTradeOrders(symbol Symbol, size int, options map[string]string) interface{} {
+func (spot *Spot) GetUserTradeOrders(symbol Symbol, size int, options map[string]string) interface{} {
 	params := map[string]string{}
 	params["instrument_id"] = symbol.ToUpper().ToSymbol("-")
 	if size != 0 {
 		params["limit"] = strconv.Itoa(size)
 	}
 
-	if orderId, ok := options["order_id"]; ok == true {
+	if orderId, ok := options["order_id"]; ok {
 		params["order_id"] = orderId
 	}
 
-	if after, ok := options["after"]; ok == true {
+	if after, ok := options["after"]; ok {
 		params["after"] = after
 	}
 
-	if before, ok := options["before"]; ok == true {
+	if before, ok := options["before"]; ok {
 		params["before"] = before
 	}
 
@@ -364,7 +362,7 @@ func (spot *OkexSpot) GetUserTradeOrders(symbol Symbol, size int, options map[st
 }
 
 // 我的委托单列表
-func (spot *OkexSpot) GetUserTrustOrders(symbol Symbol, status string, size int, options map[string]string) interface{} {
+func (spot *Spot) GetUserTrustOrders(symbol Symbol, status string, size int, options map[string]string) interface{} {
 	params := map[string]string{}
 	params["instrument_id"] = symbol.ToUpper().ToSymbol("-")
 	params["state"] = status
@@ -373,11 +371,11 @@ func (spot *OkexSpot) GetUserTrustOrders(symbol Symbol, status string, size int,
 		params["limit"] = strconv.Itoa(size)
 	}
 
-	if after, ok := options["after"]; ok == true {
+	if after, ok := options["after"]; ok {
 		params["after"] = after
 	}
 
-	if before, ok := options["before"]; ok == true {
+	if before, ok := options["before"]; ok {
 		params["before"] = before
 	}
 
@@ -388,7 +386,7 @@ func (spot *OkexSpot) GetUserTrustOrders(symbol Symbol, status string, size int,
 	return result
 }
 
-func (spot *OkexSpot) HttpRequest(requestUrl, method string, options interface{}, signed bool) interface{} {
+func (spot *Spot) HttpRequest(requestUrl, method string, options interface{}, signed bool) interface{} {
 	method = strings.ToUpper(method)
 	switch method {
 	case HTTP_GET:
@@ -399,7 +397,7 @@ func (spot *OkexSpot) HttpRequest(requestUrl, method string, options interface{}
 	return nil
 }
 
-func (spot *OkexSpot) httpGet(url string, params map[string]string, signed bool) map[string]interface{} {
+func (spot *Spot) httpGet(url string, params map[string]string, signed bool) map[string]interface{} {
 	var responseMap HttpClientResponse
 	var headers map[string]string
 	requestUrl := spot.baseUrl + url
@@ -412,22 +410,19 @@ func (spot *OkexSpot) httpGet(url string, params map[string]string, signed bool)
 	if signed {
 		timestamp := IsoTime()
 		sign := spot.sign(url, HTTP_GET, timestamp, reqData)
-		headers = map[string]string {
-			"OK-ACCESS-KEY": spot.accessKey,
-			"OK-ACCESS-SIGN": sign,
+		headers = map[string]string{
+			"OK-ACCESS-KEY":        spot.accessKey,
+			"OK-ACCESS-SIGN":       sign,
 			"OK-ACCESS-PASSPHRASE": spot.passphrase,
-			"OK-ACCESS-TIMESTAMP": timestamp,
+			"OK-ACCESS-TIMESTAMP":  timestamp,
 		}
 	}
 
 	responseMap = HttpGetWithHeader(spot.httpClient, requestUrl, headers)
-
-	fmt.Println(requestUrl)
-
 	return spot.handlerResponse(&responseMap)
 }
 
-func (spot *OkexSpot) httpPost(url string, params interface{}, signed bool) map[string]interface{} {
+func (spot *Spot) httpPost(url string, params interface{}, signed bool) map[string]interface{} {
 	var responseMap HttpClientResponse
 	var headers map[string]string
 	requestUrl := spot.baseUrl + url
@@ -439,27 +434,24 @@ func (spot *OkexSpot) httpPost(url string, params interface{}, signed bool) map[
 
 	timestamp := IsoTime()
 	sign := spot.sign(url, HTTP_POST, timestamp, reqData)
-	headers = map[string]string {
-		"OK-ACCESS-KEY": spot.accessKey,
-		"OK-ACCESS-SIGN": sign,
+	headers = map[string]string{
+		"OK-ACCESS-KEY":        spot.accessKey,
+		"OK-ACCESS-SIGN":       sign,
 		"OK-ACCESS-PASSPHRASE": spot.passphrase,
-		"OK-ACCESS-TIMESTAMP": timestamp,
+		"OK-ACCESS-TIMESTAMP":  timestamp,
 	}
 
 	responseMap = HttpPostWithJson(spot.httpClient, requestUrl, reqData, headers)
-
-	fmt.Println(requestUrl)
-
 	return spot.handlerResponse(&responseMap)
 }
 
-func (spot *OkexSpot) sign(url, method, timestamp, reqData string) string {
+func (spot *Spot) sign(url, method, timestamp, reqData string) string {
 	signStr := timestamp + method + url + reqData
 	sign, _ := HmacSha256Base64Signer(signStr, spot.secretKey)
 	return sign
 }
 
-func (spot *OkexSpot) handlerResponse(responseMap *HttpClientResponse) map[string]interface{} {
+func (spot *Spot) handlerResponse(responseMap *HttpClientResponse) map[string]interface{} {
 	var returnData map[string]interface{}
 	returnData = make(map[string]interface{})
 
@@ -487,7 +479,7 @@ func (spot *OkexSpot) handlerResponse(responseMap *HttpClientResponse) map[strin
 	return returnData
 }
 
-func (spot *OkexSpot) handlerError(retData map[string]interface{}) {
+func (spot *Spot) handlerError(retData map[string]interface{}) {
 	if retData["code"] == 0 {
 		data := retData["data"].(map[string]interface{})
 		if data["error_code"].(string) != "0" {

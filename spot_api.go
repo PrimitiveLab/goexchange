@@ -1,17 +1,7 @@
 package goexchange
 
-// api interface
-
+// SpotAPI spot api interface
 type SpotAPI interface {
-	// LimitBuy(amount, price string, currency CurrencyPair, opt ...LimitOrderOptionalParameter) (*Order, error)
-	// LimitSell(amount, price string, currency CurrencyPair, opt ...LimitOrderOptionalParameter) (*Order, error)
-	// MarketBuy(amount, price string, currency CurrencyPair) (*Order, error)
-	// MarketSell(amount, price string, currency CurrencyPair) (*Order, error)
-	// CancelOrder(orderId string, currency CurrencyPair) (bool, error)
-	// GetOneOrder(orderId string, currency CurrencyPair) (*Order, error)
-	// GetUnfinishOrders(currency CurrencyPair) ([]Order, error)
-	// GetOrderHistorys(currency CurrencyPair, currentPage, pageSize int) ([]Order, error)
-	// GetAccount() (*Account, error)
 
 	// 获取余额
 	GetUserBalance() interface{}
@@ -45,8 +35,6 @@ type SpotAPI interface {
 
 	// 我的委托单列表
 	GetUserTrustOrders(symbol Symbol, status string, size int, options map[string]string) interface{}
-
-
 
 	GetExchangeName() string
 	GetCoinList() interface{}

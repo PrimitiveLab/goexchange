@@ -288,7 +288,6 @@ func (spot *PoloniexSpot) httpGet(url string, params *url.Values) map[string]int
 
 	requestUrl := spot.baseUrl + url + "?" + params.Encode()
 	responseMap = HttpGet(spot.httpClient, requestUrl)
-	fmt.Println(requestUrl)
 	return spot.handlerResponse(&responseMap)
 }
 
@@ -304,7 +303,6 @@ func (spot *PoloniexSpot) httpPost(url string, params *url.Values) map[string]in
 	}
 
 	responseMap = HttpPostWithHeader(spot.httpClient, requestURL, params.Encode(), headers)
-	fmt.Println(requestURL)
 	return spot.handlerResponse(&responseMap)
 }
 

@@ -57,6 +57,11 @@ func Sha512Signer(message string) string {
 	return fmt.Sprintf("%x", hash)
 }
 
+// signing a message  using: hmac sha256 + base64
+func Base64Signer(message string) string {
+	return base64.StdEncoding.EncodeToString([]byte(message))
+}
+
 // Get a iso time eg: 2018-03-16T18:02:48.284Z
 func IsoTime() string {
 	utcTime := time.Now().UTC()
@@ -64,6 +69,12 @@ func IsoTime() string {
 	isoBytes := []byte(iso)
 	iso = string(isoBytes[:10]) + "T" + string(isoBytes[11:23]) + "Z"
 	return iso
+}
+
+// Get a iso time eg: 2018-03-16T18:02:48.284Z
+func GetNowUtcTime() string {
+	utcTime := time.Now().UTC()
+	return utcTime.Format("2006-01-02T15:04:05")
 }
 
 // GetNowMillisecond Get current mill second timestamp
@@ -119,7 +130,7 @@ func LoadConfig(exchange string) (map[string]interface{}, error) {
 
 	// retData := map[string]string{}
 	if _, ok := result[exchange]; !ok {
-		return nil, errors.New("exchange exist")
+		return nil, errors.New("exchange do not exist api config")
 	}
 	return result[exchange].(map[string]interface{}), nil
 }

@@ -320,7 +320,6 @@ func (spot *BikiSpot) httpGet(url string, params *url.Values, signed bool) map[s
 	}
 	requestURL := spot.baseURL + url + "?" + params.Encode()
 	responseMap = HttpGet(spot.httpClient, requestURL)
-	fmt.Println(requestURL)
 	return spot.handlerResponse(&responseMap)
 }
 
@@ -333,7 +332,6 @@ func (spot *BikiSpot) httpPost(url string, params *url.Values, signed bool) map[
 
 	responseMap = HttpPost(spot.httpClient, requestURL, params.Encode())
 
-	fmt.Println(requestURL)
 	return spot.handlerResponse(&responseMap)
 }
 

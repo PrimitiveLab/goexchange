@@ -25,12 +25,14 @@ type TimeInForce int
 const (
 	// 成交为止
 	GTC TimeInForce = 0
-	// 只吃单不挂单(只做taker单).
+	// 只吃单不挂单(只做maker单).
 	POC TimeInForce = 1
 	// 立即成交并取消剩余,只吃单不挂单(只做taker单).
 	IOC TimeInForce = 2
 	// 全部成交或立即取消,如果无法全部成交，订单会失效
 	FOK TimeInForce = 3
+	// 全部成交或立即取消,如果无法全部成交，订单会失效
+	GTX TimeInForce = 4
 )
 
 // 交易类型
@@ -75,4 +77,5 @@ const (
 	EXCHANGE_HOO      = "hoo"
 	EXCHANGE_POLONIEX = "poloniex"
 	EXCHANGE_BIKI     = "biki"
+	EXCHANGE_HITBTC   = "hitbtc"
 )

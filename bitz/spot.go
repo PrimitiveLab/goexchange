@@ -342,8 +342,6 @@ func (spot *BitzSpot) httpRequest(url, method string, params *url.Values, signed
 		responseMap = HttpPost(spot.httpClient, requestUrl, params.Encode())
 	}
 
-	fmt.Println(requestUrl)
-
 	var returnData map[string]interface{}
 	returnData = make(map[string]interface{})
 

@@ -14,7 +14,7 @@ var secretKey = ""
 var passphrase = ""
 
 func TestGetDepth(t *testing.T) {
-	market := New(client, "","","","")
+	market := New(client, "", "", "", "")
 
 	response := market.GetDepth(NewSymbol("eos", "usdt"), 21, nil)
 	b, _ := json.Marshal(response)
@@ -22,7 +22,7 @@ func TestGetDepth(t *testing.T) {
 }
 
 func TestGetTicker(t *testing.T) {
-	market := New(client, "","","","")
+	market := New(client, "", "", "", "")
 
 	response := market.GetTicker(NewSymbol("btc", "usdt"))
 	b, _ := json.Marshal(response)
@@ -30,7 +30,7 @@ func TestGetTicker(t *testing.T) {
 }
 
 func TestGetKline(t *testing.T) {
-	market := New(client, "","","","")
+	market := New(client, "", "", "", "")
 
 	response := market.GetKline(NewSymbol("btc", "usdt"), KLINE_PERIOD_5MINUTE, 10, nil)
 	b, _ := json.Marshal(response)
@@ -38,7 +38,7 @@ func TestGetKline(t *testing.T) {
 }
 
 func TestGetTrade(t *testing.T) {
-	market := New(client, "","","","")
+	market := New(client, "", "", "", "")
 
 	response := market.GetTrade(NewSymbol("btc", "usdt"), 21, nil)
 	b, _ := json.Marshal(response)
@@ -46,7 +46,7 @@ func TestGetTrade(t *testing.T) {
 }
 
 func TestGetSymbolList(t *testing.T) {
-	market := New(client, "","","","")
+	market := New(client, "", "", "", "")
 	response := market.GetSymbolList()
 	b, _ := json.Marshal(response)
 	t.Log(string(b))
@@ -87,7 +87,7 @@ func TestGetUserTradeOrders(t *testing.T) {
 	market := New(client, "", apiKey, secretKey, passphrase)
 
 	// symbol Symbol, status string, size int, options map[string]string
-	response := market.GetUserTradeOrders(NewSymbol("btc", "usdt"),10, nil)
+	response := market.GetUserTradeOrders(NewSymbol("btc", "usdt"), 10, nil)
 	b, _ := json.Marshal(response)
 	t.Log(string(b))
 }
@@ -96,7 +96,7 @@ func TestGetUserOrderInfo(t *testing.T) {
 	market := New(client, "", apiKey, secretKey, passphrase)
 
 	// symbol Symbol, status string, size int, options map[string]string
-	response := market.GetUserOrderInfo(NewSymbol("btc", "usdt"),"60288436352655361", "")
+	response := market.GetUserOrderInfo(NewSymbol("btc", "usdt"), "60288436352655361", "")
 	b, _ := json.Marshal(response)
 	t.Log(string(b))
 }
@@ -105,7 +105,7 @@ func TestGetUserOpenTrustOrders(t *testing.T) {
 	market := New(client, "", apiKey, secretKey, passphrase)
 
 	// symbol Symbol, status string, size int, options map[string]string
-	response := market.GetUserOpenTrustOrders(NewSymbol("btc", "usdt"),10, nil)
+	response := market.GetUserOpenTrustOrders(NewSymbol("btc", "usdt"), 10, nil)
 	b, _ := json.Marshal(response)
 	t.Log(string(b))
 }
@@ -114,7 +114,7 @@ func TestOkexSpot_PlaceLimitOrder(t *testing.T) {
 	market := New(client, "", apiKey, secretKey, passphrase)
 
 	// symbol Symbol, status string, size int, options map[string]string
-	response := market.PlaceLimitOrder(NewSymbol("link", "usdt"),"13", "1", BUY, "")
+	response := market.PlaceLimitOrder(NewSymbol("link", "usdt"), "13", "1", BUY, "")
 	b, _ := json.Marshal(response)
 	t.Log(string(b))
 }
@@ -147,7 +147,7 @@ func TestOkexSpot_CancelOrder(t *testing.T) {
 	market := New(client, "", apiKey, secretKey, passphrase)
 
 	// symbol Symbol, status string, size int, options map[string]string
-	response := market.CancelOrder(NewSymbol("link", "usdt"),"6045175117077504", "")
+	response := market.CancelOrder(NewSymbol("link", "usdt"), "6045175117077504", "")
 	b, _ := json.Marshal(response)
 	t.Log(string(b))
 }
@@ -156,14 +156,14 @@ func TestOkexSpot_BatchCancelOrder(t *testing.T) {
 	market := New(client, "", apiKey, secretKey, passphrase)
 
 	// symbol Symbol, status string, size int, options map[string]string
-	response := market.BatchCancelOrder(NewSymbol("link", "usdt"),"6034189181870081,6034189181870082", "")
+	response := market.BatchCancelOrder(NewSymbol("link", "usdt"), "6034189181870081,6034189181870082", "")
 	b, _ := json.Marshal(response)
 	t.Log(string(b))
 }
 
 func TestHttpRequest(t *testing.T) {
 	// client := &http.Client{}
-	market := New(client, "","","","")
+	market := New(client, "", "", "", "")
 	instrumentId := NewSymbol("btc", "usdt").ToUpper().ToSymbol("-")
 	params := map[string]interface{}{}
 	params["granularity"] = "300"

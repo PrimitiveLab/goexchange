@@ -354,7 +354,6 @@ func (spot *GateSpot) httpGet(url string, params *url.Values, signed bool) map[s
 	}
 	requestURL := spot.baseURL + url + "?" + params.Encode()
 	responseMap = HttpGetWithHeader(spot.httpClient, requestURL, headers)
-	fmt.Println(requestURL)
 	return spot.handlerResponse(&responseMap)
 }
 
@@ -375,7 +374,6 @@ func (spot *GateSpot) httpPost(url string, params *url.Values, signed bool) map[
 	requestURL := spot.baseURL + url
 	responseMap = HttpPostWithJson(spot.httpClient, requestURL, string(jsonBody), headers)
 
-	fmt.Println(requestURL)
 	return spot.handlerResponse(&responseMap)
 }
 
@@ -392,7 +390,6 @@ func (spot *GateSpot) httpPostBatch(url string, params interface{}, signed bool)
 	requestURL := spot.baseURL + url
 	responseMap = HttpPostWithJson(spot.httpClient, requestURL, string(jsonBody), headers)
 
-	fmt.Println(requestURL)
 	return spot.handlerResponse(&responseMap)
 }
 
@@ -408,7 +405,6 @@ func (spot *GateSpot) httpDelete(url string, params *url.Values, signed bool) ma
 	}
 	requestURL := spot.baseURL + url + "?" + params.Encode()
 	responseMap = HttpDeleteWithHeader(spot.httpClient, requestURL, headers)
-	fmt.Println(requestURL)
 	return spot.handlerResponse(&responseMap)
 }
 

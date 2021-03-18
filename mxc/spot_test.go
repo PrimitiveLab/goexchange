@@ -2,9 +2,10 @@ package mxc
 
 import (
 	"encoding/json"
-	. "github.com/primitivelab/goexchange"
 	"net/http"
 	"testing"
+
+	. "github.com/primitivelab/goexchange"
 )
 
 var client = &http.Client{}

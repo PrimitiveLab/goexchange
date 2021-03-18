@@ -8,7 +8,6 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
-	"time"
 
 	. "github.com/primitivelab/goexchange"
 )
@@ -68,15 +67,7 @@ func (spot *MxcSpot) GetExchangeName() string {
 }
 
 func (spot *MxcSpot) GetCoinList() interface{} {
-	startTime := time.Now().UnixNano() / 1e6
-	retData := map[string]interface{}{
-		"code":  MethodNotExistError.Code,
-		"st":    startTime,
-		"et":    startTime,
-		"msg":   MethodNotExistError.Msg,
-		"error": MethodNotExistError.Msg,
-		"data":  nil}
-	return retData
+	return ReturnAPIError(MethodNotExistError)
 }
 
 func (spot *MxcSpot) GetSymbolList() interface{} {
@@ -194,15 +185,7 @@ func (spot *MxcSpot) PlaceLimitOrder(symbol Symbol, price string, amount string,
 
 // 下市价单
 func (spot *MxcSpot) PlaceMarketOrder(symbol Symbol, amount string, side TradeSide, ClientOrderId string) interface{} {
-	startTime := time.Now().UnixNano() / 1e6
-	retData := map[string]interface{}{
-		"code":  MethodNotExistError.Code,
-		"st":    startTime,
-		"et":    startTime,
-		"msg":   MethodNotExistError.Msg,
-		"error": MethodNotExistError.Msg,
-		"data":  nil}
-	return retData
+	return ReturnAPIError(MethodNotExistError)
 }
 
 // 批量下限价单
@@ -324,7 +307,6 @@ func (spot *MxcSpot) httpRequest(url, method string, params *url.Values, signed 
 	switch method {
 	case "GET":
 		requestUrl := spot.baseUrl + url + "?" + params.Encode()
-		fmt.Println(requestUrl)
 		responseMap = HttpGet(spot.httpClient, requestUrl)
 		// case "POST":
 		// 	return nil
@@ -372,8 +354,6 @@ func (spot *MxcSpot) httpGet(url string, params *url.Values, signed bool) map[st
 	}
 	responseMap = HttpGet(spot.httpClient, requestUrl)
 
-	fmt.Println(requestUrl)
-
 	return spot.handlerResponse(&responseMap)
 }
 
@@ -398,9 +378,6 @@ func (spot *MxcSpot) httpPost(url string, params *url.Values, signed bool) map[s
 	reqData := string(jsonBody)
 	headers := map[string]string{}
 	responseMap = HttpPostWithJson(spot.httpClient, requestUrl, reqData, headers)
-
-	fmt.Println(requestUrl)
-
 	return spot.handlerResponse(&responseMap)
 }
 
@@ -414,9 +391,6 @@ func (spot *MxcSpot) httpDelete(url string, params *url.Values, signed bool) map
 
 	requestUrl := fmt.Sprintf("%s%s?%s&sign=%s", spot.baseUrl, url, reqData, sign)
 	responseMap = HttpDelete(spot.httpClient, requestUrl)
-
-	fmt.Println(requestUrl)
-
 	return spot.handlerResponse(&responseMap)
 }
 

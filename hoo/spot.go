@@ -2,7 +2,6 @@ package hoo
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -259,7 +258,6 @@ func (spot *HooSpot) httpGet(url string, params *url.Values, signed bool) map[st
 	}
 
 	responseMap = HttpGet(spot.httpClient, requestUrl)
-	fmt.Println(requestUrl)
 	return spot.handlerResponse(&responseMap)
 }
 
@@ -273,9 +271,6 @@ func (spot *HooSpot) httpPost(url string, params *url.Values, signed bool) map[s
 	requestUrl := spot.baseUrl + url
 
 	responseMap = HttpPost(spot.httpClient, requestUrl, params.Encode())
-
-	fmt.Println(requestUrl)
-
 	return spot.handlerResponse(&responseMap)
 }
 
@@ -316,7 +311,6 @@ func (spot *HooSpot) handlerResponse(responseMap *HttpClientResponse) map[string
 		return returnData
 	}
 	if bodyDataMap["code"].(float64) != 0 {
-		fmt.Println(bodyDataMap)
 		returnData["code"] = ExchangeError.Code
 		returnData["msg"] = bodyDataMap["msg"].(string)
 		returnData["error"] = returnData["msg"]
