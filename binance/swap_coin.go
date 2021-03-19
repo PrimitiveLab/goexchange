@@ -110,7 +110,7 @@ func (swap *SwapCoin) GetTicker(symbol goex.Symbol) interface{} {
 func (swap *SwapCoin) GetTickerBook(symbol goex.Symbol) interface{} {
 	params := &url.Values{}
 	params.Set("symbol", swap.getSymbol(symbol))
-	result := swap.httpGet("/fapi/v1/ticker/bookTicker", params, false)
+	result := swap.httpGet("/dapi/v1/ticker/bookTicker", params, false)
 	if result["code"] != 0 {
 		return result
 	}
