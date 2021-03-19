@@ -2,6 +2,7 @@ package huobi
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -142,6 +143,7 @@ func (swap *SwapUsdt) GetPremiumIndex(symbol goex.Symbol) interface{} {
 	if result["code"] != 0 {
 		return result
 	}
+	fmt.Println(result)
 	result["data"] = result["data"].(map[string]interface{})["data"]
 	return result
 }
@@ -236,7 +238,15 @@ func (swap *SwapUsdt) handlerResponse(responseMap *goex.HttpClientResponse) map[
 	if status, ok := bodyDataMap["status"]; ok && status.(string) != "ok" {
 		retData["code"] = goex.ExchangeError.Code
 		retData["msg"] = goex.ExchangeError.Msg
-		retData["error"] = bodyDataMap["err-msg"].(string)
+		if msg, ok := bodyDataMap["err-msg"]; ok {
+			retData["error"] = msg.(string)
+			return retData
+		}
+
+		if msg, ok := bodyDataMap["err_msg"]; ok {
+			retData["error"] = msg.(string)
+			return retData
+		}
 		return retData
 	}
 	if code, ok := bodyDataMap["code"]; ok && code.(float64) != 200 {
